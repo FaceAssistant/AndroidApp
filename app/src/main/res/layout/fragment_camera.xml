@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimary">
+
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:actionBarSize"
+        android:layout_alignParentTop="true"
+        android:background="@color/colorPrimary"
+        app:navigationIcon="@drawable/ic_action_clear"
+        app:title="Camera"
+        app:titleTextColor="@color/pureWhite"
+    />
+
+
+    <faceassist.faceassist.Camera.CameraComponents.CameraTextureView
+        android:id="@+id/texture"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar"
+    />
+
+
+    <!--Transparent placeholder -->
+    <faceassist.faceassist.Utils.Views.SquareSpace
+        android:id="@+id/space"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar"
+    />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/space"
+        android:background="@color/colorPrimary"
+    >
+
+
+        <!--<ImageView-->
+        <!--android:id="@+id/capture_button"-->
+        <!--android:layout_width="72dp"-->
+        <!--android:layout_height="72dp"-->
+        <!--android:layout_gravity="center"-->
+        <!--android:src="@drawable/camera_button"/>-->
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/capture_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_action_camera"
+            app:fabSize="normal"
+        />
+
+
+    </FrameLayout>
+
+
+</RelativeLayout>
