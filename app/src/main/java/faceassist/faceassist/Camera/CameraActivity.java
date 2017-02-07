@@ -11,13 +11,25 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.HashMap;
+
+import faceassist.faceassist.API.API;
 import faceassist.faceassist.Camera.CameraComponents.CameraFragment;
 import faceassist.faceassist.Camera.CameraComponents.FacialRecFragment;
 import faceassist.faceassist.Camera.CameraComponents.NeedPermissionFragment;
 import faceassist.faceassist.R;
+import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.PermissionUtils;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class CameraActivity extends AppCompatActivity implements CameraFragment.OnImageTaken,
         NeedPermissionFragment.OnCheckPermissionClicked, FacialRecFragment.OnConfirmFace{
@@ -127,7 +139,57 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
     }
 
     @Override
-    public void onConfirmFace(Bitmap bitmap) {
+    public void onConfirmFace(String bitmap) {
 
+        //turn this into MVP later
+
+        //Log.i(TAG, "onConfirmFace: "+bitmap);
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("image", bitmap);
+
+        API.post(new String[]{"face", "recognize"},
+                new HashMap<String, String>(),
+                params,
+                new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(CameraActivity.this, "Failed to get response from server", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        if (response.isSuccessful()){
+                            try {
+                                JSONObject obj = new JSONObject(response.body().string());
+
+                                Log.i(TAG, "onResponse: "+obj.toString(4));
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(CameraActivity.this, "Error parsing", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+                            }
+                        }else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(CameraActivity.this, "Bad response", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            Log.d(TAG, "onResponse: "+response.body().string());
+                        }
+                    }
+                });
     }
 }

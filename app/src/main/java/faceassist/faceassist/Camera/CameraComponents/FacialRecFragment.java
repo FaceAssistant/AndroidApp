@@ -3,6 +3,7 @@ package faceassist.faceassist.Camera.CameraComponents;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestListener;
@@ -25,14 +27,19 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
+import java.io.File;
+import java.io.IOException;
+
 import faceassist.faceassist.Camera.Utils.SquareFaceView;
 import faceassist.faceassist.Camera.Utils.SquareFaceView.OnFaceSelected;
 import faceassist.faceassist.R;
+import faceassist.faceassist.Utils.ImageUtils;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
 
 import static rx.android.schedulers.AndroidSchedulers.mainThread;
+import static rx.schedulers.Schedulers.io;
 import static rx.schedulers.Schedulers.newThread;
 
 /**
@@ -56,10 +63,13 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected{
     private Uri mImageUri;
 
     private Subscription mFacialRecSubscription;
+    private Subscription mCropSubscription;
     private FrameLayout vImageParent;
     private Toolbar vToolbar;
 
     private SquareFaceView mSelectedFace;
+    private Bitmap mImageBitmap;
+
 
     public static FacialRecFragment newInstance(Uri imageUri) {
         FacialRecFragment fragment = new FacialRecFragment();
@@ -129,6 +139,8 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected{
             mImageUri = getArguments().getParcelable(IMAGE_URI);
 
 
+        mSelectedFace = null;
+
         if (mImageUri != null) {
 
             Glide.with(this)
@@ -167,6 +179,11 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected{
 
 
     private void runFacialRec(Bitmap bitmap) {
+
+        if (mImageBitmap != null && mImageBitmap != bitmap)
+            mImageBitmap.recycle();
+
+        mImageBitmap = bitmap;
 
         mFacialRecSubscription = Observable.just(detectFaces(bitmap))
                 .subscribeOn(newThread())
@@ -228,8 +245,44 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected{
     }
 
     private void onConfirmClick() {
-        showProgress(true);
+        if (getContext() == null) return;
+        if (mSelectedFace == null){
+            Toast.makeText(getContext(), "Please select a face", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        showProgress(true);
+        mCropSubscription = Observable.just(cropImage())
+                .subscribeOn(io())
+                .observeOn(mainThread())
+                .subscribe(new Action1<String>() {
+                    @Override
+                    public void call(String bitmap) {
+                        if (bitmap != null && mOnConfirmFace != null){
+                            mOnConfirmFace.onConfirmFace(bitmap);
+                        }
+                    }
+                });
+    }
+
+    private String cropImage(){
+        if (mImageBitmap != null){
+            Face face = mSelectedFace.getFace();
+            PointF pos = face.getPosition();
+            Bitmap bitmap = Bitmap.createBitmap(mImageBitmap, (int)pos.x, (int)pos.y, (int)face.getWidth(), (int)face.getHeight());
+
+            //test code, make sure to change this to cache later
+            File image = ImageUtils.savePicture(getContext(), bitmap);
+
+
+            try {
+                return  ImageUtils.encodeFileBase64(image);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -245,8 +298,14 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected{
     }
 
     public interface OnConfirmFace {
-        //todo use bitmap or uri?
-        void onConfirmFace(Bitmap bitmap);
+        void onConfirmFace(String bitmap);
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mCropSubscription != null) mCropSubscription.unsubscribe();
     }
 
     @Override

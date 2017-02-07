@@ -17,6 +17,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -38,7 +39,7 @@ import static rx.schedulers.Schedulers.io;
 public class CameraFragment extends Fragment implements TextureView.SurfaceTextureListener {
 
     public static final String TAG = CameraFragment.class.getSimpleName();
-    public static final int MAX_RESOLUTION = 3200;
+    public static final int MAX_RESOLUTION = 2400;
 
     private Camera mCamera;
     private CameraTextureView mCameraTextureView;
@@ -140,9 +141,9 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         if (previewBitmap != original)
             original.recycle();
 
-        Uri uri = ImageUtils.savePictureToCache(getContext(), previewBitmap);
+        File f = ImageUtils.savePictureToCache(getContext(), previewBitmap);
         previewBitmap.recycle();
-        return uri;
+        return Uri.fromFile(f);
     }
 
     @Override

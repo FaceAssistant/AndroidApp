@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
+import android.util.Base64;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -13,16 +16,43 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import faceassist.faceassist.R;
+
 /**
  * Created by QiFeng on 1/31/17.
  */
 
 public class ImageUtils {
 
-    public static Uri savePicture(Context context, Bitmap bitmap) {
+
+    public static String encodeFileBase64(File file) throws IOException {
+        byte[] filebyte = FileUtils.readFileToByteArray(file);
+        return Base64.encodeToString(filebyte, Base64.NO_WRAP);
+        //return Base64.encodeToString(byteFormat, Base64.URL_SAFE);
+    }
+
+
+//    public static String encodeImageBase64(Bitmap bitmap) {
+//        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream); //NOTE: Change Compression as needed
+//        byte[] byteFormat = stream.toByteArray();
+//        // get the base 64 string
+//        return Base64.encodeToString(byteFormat, Base64.NO_WRAP);
+//    }
+
+
+//    public static String encodeImageBase64HighRes(Bitmap bitmap) {
+//        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream); //NOTE: Change Compression as needed
+//        byte[] byteFormat = stream.toByteArray();
+//        // get the base 64 string
+//        return Base64.encodeToString(byteFormat, Base64.NO_WRAP);
+//    }
+
+    public static File savePicture(Context context, Bitmap bitmap) {
         File mediaStorageDir = new File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "Tapt"
+                "FaceAssist"
         );
 
         if (!mediaStorageDir.exists()) {
@@ -62,11 +92,11 @@ public class ImageUtils {
         mediaScannerIntent.setData(fileContentUri);
         context.sendBroadcast(mediaScannerIntent);
 
-        return fileContentUri;
+        return mediaFile;
     }
 
 
-    public static Uri savePictureToCache(Context context, Bitmap bitmap) {
+    public static File savePictureToCache(Context context, Bitmap bitmap) {
         if (context == null) return  null;
 
         String timeStamp = SimpleDateFormat.getDateTimeInstance().format(new Date());
@@ -85,6 +115,6 @@ public class ImageUtils {
             exception.printStackTrace();
         }
 
-        return Uri.fromFile(image);
+        return image;
     }
 }

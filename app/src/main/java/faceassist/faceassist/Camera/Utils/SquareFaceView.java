@@ -73,7 +73,7 @@ public class SquareFaceView extends View {
         this.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i("FACE", "onClick: ");
+                //Log.i("FACE", "onClick: ");
                 if(mOnFaceSelected != null)
                     mOnFaceSelected.onFaceSelected(SquareFaceView.this);
             }
