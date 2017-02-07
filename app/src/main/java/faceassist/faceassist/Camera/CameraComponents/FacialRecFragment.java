@@ -3,7 +3,6 @@ package faceassist.faceassist.Camera.CameraComponents;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
-import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -27,13 +26,13 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
-import java.io.File;
-import java.io.IOException;
 
-import faceassist.faceassist.Camera.Utils.SquareFaceView;
-import faceassist.faceassist.Camera.Utils.SquareFaceView.OnFaceSelected;
+import faceassist.faceassist.Camera.CameraComponents.Utils.CustomFace;
+import faceassist.faceassist.Camera.CameraComponents.Utils.SquareFaceView;
+import faceassist.faceassist.Camera.CameraComponents.Utils.SquareFaceView.OnFaceSelected;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.ImageUtils;
+import faceassist.faceassist.Utils.OnFinished;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
@@ -46,7 +45,7 @@ import static rx.schedulers.Schedulers.newThread;
  * Created by QiFeng on 1/31/17.
  */
 
-public class FacialRecFragment extends Fragment implements OnFaceSelected{
+public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFinished {
 
     public static final String TAG = FacialRecFragment.class.getSimpleName();
 
@@ -193,8 +192,12 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected{
                     public void call(SparseArray<Face> faceSparseArray) {
                         if (getContext() == null || faceSparseArray == null) return;
                         for (int i = 0; i < faceSparseArray.size(); i++) {
-                            Face face = faceSparseArray.valueAt(i);
-                            Log.i(TAG, face.getPosition() + "");
+
+                            CustomFace face = new CustomFace(faceSparseArray.valueAt(i),
+                                    mImageBitmap.getWidth(), mImageBitmap.getHeight());
+
+                            Log.d(TAG, face.toString());
+
                             SquareFaceView v = new SquareFaceView(getContext(), face);
                             vImageParent.addView(v);
                             v.updatePosition();
@@ -246,7 +249,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected{
 
     private void onConfirmClick() {
         if (getContext() == null) return;
-        if (mSelectedFace == null){
+        if (mSelectedFace == null) {
             Toast.makeText(getContext(), "Please select a face", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -258,36 +261,41 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected{
                 .subscribe(new Action1<String>() {
                     @Override
                     public void call(String bitmap) {
-                        if (bitmap != null && mOnConfirmFace != null){
-                            mOnConfirmFace.onConfirmFace(bitmap);
+                        if (bitmap != null && mOnConfirmFace != null) {
+                            mOnConfirmFace.onConfirmFace(bitmap, FacialRecFragment.this);
+                        } else {
+                            onFinished();
                         }
                     }
                 });
     }
 
-    private String cropImage(){
-        if (mImageBitmap != null){
-            Face face = mSelectedFace.getFace();
-            PointF pos = face.getPosition();
-            Bitmap bitmap = Bitmap.createBitmap(mImageBitmap, (int)pos.x, (int)pos.y, (int)face.getWidth(), (int)face.getHeight());
+    private String cropImage() {
+        if (mImageBitmap != null) {
+            CustomFace face = mSelectedFace.getFace();
 
-            //test code, make sure to change this to cache later
-            File image = ImageUtils.savePicture(getContext(), bitmap);
+            Bitmap bitmap = Bitmap.createBitmap(mImageBitmap, face.x, face.y, face.width, face.height);
 
+            //NOTE: test code
+            ImageUtils.savePicture(getContext(), bitmap);
 
-            try {
-                return  ImageUtils.encodeFileBase64(image);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            return ImageUtils.encodeImageBase64(bitmap);
+
         }
 
         return null;
     }
 
+    private int clip(int input, int min, int max) {
+        if (input < min) return 0;
+        if (input > max) return max;
+
+        return input;
+    }
+
     @Override
     public void onFaceSelected(SquareFaceView v) {
-        if (mSelectedFace != null){
+        if (mSelectedFace != null) {
             mSelectedFace.setSelected(false);
             mSelectedFace.invalidate();
         }
@@ -297,8 +305,15 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected{
         mSelectedFace.invalidate();
     }
 
+    @Override
+    public void onFinished() {
+        showProgress(false);
+    }
+
     public interface OnConfirmFace {
-        void onConfirmFace(String bitmap);
+        void onConfirmFace(String bitmapString, OnFinished onFinished);
+
+        void onStopSearch();
     }
 
 
@@ -313,6 +328,8 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected{
         super.onDestroy();
         if (mFaceDetector != null) mFaceDetector.release();
         if (mFacialRecSubscription != null) mFacialRecSubscription.unsubscribe();
+
+        mOnConfirmFace.onStopSearch();
     }
 }
 

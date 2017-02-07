@@ -36,7 +36,6 @@ dependencies {
 
     compile 'com.google.android.gms:play-services-vision:10.0.1'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
-    compile 'commons-io:commons-io:2.4'
 
 
 }

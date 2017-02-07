@@ -1,8 +1,8 @@
 package faceassist.faceassist.Camera;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -13,19 +13,21 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 import faceassist.faceassist.API.API;
 import faceassist.faceassist.Camera.CameraComponents.CameraFragment;
 import faceassist.faceassist.Camera.CameraComponents.FacialRecFragment;
 import faceassist.faceassist.Camera.CameraComponents.NeedPermissionFragment;
+import faceassist.faceassist.Camera.Profile.Profile;
+import faceassist.faceassist.Camera.Profile.ProfileActivity;
 import faceassist.faceassist.R;
-import faceassist.faceassist.Utils.ImageUtils;
+import faceassist.faceassist.Utils.OnFinished;
 import faceassist.faceassist.Utils.PermissionUtils;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -40,6 +42,8 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
     //using these two guys because permission results are returned before onResume
     protected boolean mHasCameraPermission = false;
     protected boolean mReceivedRequestPermissionResults = false;
+
+    private Call mFacialSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,8 +67,7 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
             if (mHasCameraPermission)
                 launchFragment(CameraFragment.newInstance(), CameraFragment.TAG);
             else
-                launchFragment(NeedPermissionFragment.newInstance(R.string.camera_perm_title,
-                        R.string.camera_perm_text),
+                launchFragment(NeedPermissionFragment.newInstance(R.string.camera_perm_title, R.string.camera_perm_text),
                         NeedPermissionFragment.TAG);
 
             mReceivedRequestPermissionResults = false;
@@ -139,27 +142,33 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
     }
 
     @Override
-    public void onConfirmFace(String bitmap) {
+    public void onConfirmFace(String bitmapString, OnFinished onFinished) {
 
         //turn this into MVP later
 
         //Log.i(TAG, "onConfirmFace: "+bitmap);
         HashMap<String, Object> params = new HashMap<>();
-        params.put("image", bitmap);
+        params.put("image", bitmapString);
 
-        API.post(new String[]{"face", "recognize"},
+        final WeakReference<OnFinished> mOnFinishedWeakReference = new WeakReference<>(onFinished);
+
+        if (mFacialSearch != null) mFacialSearch.cancel();
+
+        mFacialSearch = API.post(new String[]{"face", "recognize"},
                 new HashMap<String, String>(),
                 params,
                 new Callback() {
+
                     @Override
                     public void onFailure(Call call, IOException e) {
+                        if (call.isCanceled()) return;
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 Toast.makeText(CameraActivity.this, "Failed to get response from server", Toast.LENGTH_SHORT).show();
+                                if (mOnFinishedWeakReference.get() != null) mOnFinishedWeakReference.get().onFinished();
                             }
                         });
-
                     }
 
                     @Override
@@ -167,8 +176,20 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
                         if (response.isSuccessful()){
                             try {
                                 JSONObject obj = new JSONObject(response.body().string());
+                                Log.d(TAG, "onResponse: "+obj.toString(4));
 
-                                Log.i(TAG, "onResponse: "+obj.toString(4));
+                                final Profile profile = new Profile(obj);
+
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (mOnFinishedWeakReference.get() != null) mOnFinishedWeakReference.get().onFinished();
+
+                                        Intent intent = new Intent(CameraActivity.this, ProfileActivity.class);
+                                        intent.putExtra(ProfileActivity.ARG_PROFILE, profile);
+                                        startActivity(intent);
+                                    }
+                                });
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -176,6 +197,7 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
                                     @Override
                                     public void run() {
                                         Toast.makeText(CameraActivity.this, "Error parsing", Toast.LENGTH_SHORT).show();
+                                        if (mOnFinishedWeakReference.get() != null) mOnFinishedWeakReference.get().onFinished();
                                     }
                                 });
 
@@ -185,11 +207,18 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
                                 @Override
                                 public void run() {
                                     Toast.makeText(CameraActivity.this, "Bad response", Toast.LENGTH_SHORT).show();
+                                    if (mOnFinishedWeakReference.get() != null) mOnFinishedWeakReference.get().onFinished();
                                 }
                             });
-                            Log.d(TAG, "onResponse: "+response.body().string());
+                            Log.d(TAG, "onResponse: "+response.code()+" "+response.message());
                         }
                     }
                 });
+    }
+
+    @Override
+    public void onStopSearch() {
+        if (mFacialSearch != null) mFacialSearch.cancel();
+        mFacialSearch = null;
     }
 }

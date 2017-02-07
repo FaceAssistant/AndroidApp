@@ -1,13 +1,10 @@
-package faceassist.faceassist.Camera.Utils;
+package faceassist.faceassist.Camera.CameraComponents.Utils;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.View;
-
-import com.google.android.gms.vision.face.Face;
 
 /**
  * Created by QiFeng on 2/5/17.
@@ -15,19 +12,19 @@ import com.google.android.gms.vision.face.Face;
 
 public class SquareFaceView extends View {
 
-    private Face mFace;
+    private CustomFace mFace;
     private Paint mPaint = new Paint();
     private OnFaceSelected mOnFaceSelected;
 
     private boolean mSelected = false;
 
-    public SquareFaceView(Context context, Face face) {
+    public SquareFaceView(Context context, CustomFace face) {
         super(context);
         init(face);
     }
 
 
-    private void init(Face face){
+    private void init(CustomFace face){
         mFace = face;
         mPaint.setStrokeWidth(6);
         mPaint.setStyle(Paint.Style.STROKE);
@@ -38,16 +35,16 @@ public class SquareFaceView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         mPaint.setColor(mSelected ? Color.GREEN : Color.RED);
-        canvas.drawRect(0, 0,mFace.getWidth(), mFace.getHeight(), mPaint);
+        canvas.drawRect(0, 0,mFace.width, mFace.height, mPaint);
     }
 
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        setMeasuredDimension((int)mFace.getWidth(), (int)mFace.getHeight());
+        setMeasuredDimension((int)mFace.width, (int)mFace.height);
     }
 
-    public Face getFace(){
+    public CustomFace getFace(){
         return mFace;
     }
 
@@ -63,8 +60,8 @@ public class SquareFaceView extends View {
 
 
     public void updatePosition(){
-        setX(mFace.getPosition().x);
-        setY(mFace.getPosition().y);
+        setX(mFace.x);
+        setY(mFace.y);
     }
 
     public void setOnFaceSelected(OnFaceSelected onFaceSelected){

@@ -6,6 +6,7 @@ package faceassist.faceassist.API;
 
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import okhttp3.Call;
@@ -21,7 +22,7 @@ import okhttp3.RequestBody;
  * Created by QiFeng on 11/21/15.
  */
 
-public class API{
+public class API {
 
     public static String TAG = API.class.getSimpleName();
 
@@ -32,6 +33,7 @@ public class API{
     private static final String VERSION_LIVE = "v1";
 
 
+    private static String CONTENT_TYPE = "application/json";
 
     //JSON TYPE
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
@@ -83,11 +85,10 @@ public class API{
         OkHttpClient client = new OkHttpClient();
         Headers requestHeaders = Headers.of(headers);   //add headers
         String url = getURL(path);
-        Call call = client.newCall(new Request.Builder().url(url).headers(requestHeaders).method("POST", body).build());
+        Call call = client.newCall(new Request.Builder().url(url).headers(requestHeaders).post(body).build());
         call.enqueue(callback);
         return call;
     }
-
 
 
     //API PUT
@@ -101,7 +102,7 @@ public class API{
         OkHttpClient client = new OkHttpClient();
         Headers requestHeaders = Headers.of(headers); //add headers
         String url = getURL(path);
-        Call call = client.newCall(new Request.Builder().url(url).method("PUT", body).headers(requestHeaders).build());
+        Call call = client.newCall(new Request.Builder().url(url).put(body).headers(requestHeaders).build());
         call.enqueue(callback);
 
         return call;
@@ -114,15 +115,11 @@ public class API{
                               Callback callback) {
 
         OkHttpClient client = new OkHttpClient();
-
         Headers requestHeaders = Headers.of(headers); //add headers
-
         JSONObject json = new JSONObject(params);
         RequestBody body = RequestBody.create(JSON, json.toString()); //create json
-
         String url = getURL(path);
-
-        Call call = client.newCall(new Request.Builder().url(url).method("DELETE", body).headers(requestHeaders).build());
+        Call call = client.newCall(new Request.Builder().url(url).delete(body).headers(requestHeaders).build());
         call.enqueue(callback);
 
         return call;
@@ -130,19 +127,24 @@ public class API{
 
     public static String getURL(String[] path) {
         StringBuilder url = new StringBuilder();
-        url.append(SCHEME);
-        url.append("://");
-        url.append(HOST_LIVE);
-        url.append("/");
-        url.append(VERSION_LIVE);
-        url.append("/");
+        url.append(SCHEME)
+                .append("://")
+                .append(HOST_LIVE)
+                .append("/")
+                .append(VERSION_LIVE);
 
-        for (String p : path){
-            url.append(p);
-            url.append("/");
-        }
+        for (String p : path)
+            url.append("/").append(p);
+
 
         return url.toString();
+    }
+
+
+    public static HashMap<String, String> getMainHeader() {
+        HashMap<String, String> header = new HashMap<>();
+        header.put("Content-Type", CONTENT_TYPE);
+        return header;
     }
 
 }
