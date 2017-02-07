@@ -214,7 +214,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
         if (getContext() == null) return null;
 
         mFaceDetector = new FaceDetector.Builder(getContext())
-                .setMinFaceSize(0.2f)
+                .setMinFaceSize(0.25f) //NOTE: proportion to image. change accordingly
                 .setTrackingEnabled(false)
                 .build();
 
@@ -274,7 +274,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
         if (mImageBitmap != null) {
             CustomFace face = mSelectedFace.getFace();
 
-            Bitmap bitmap = Bitmap.createBitmap(mImageBitmap, face.x, face.y, face.width, face.height);
+            Bitmap bitmap = Bitmap.createBitmap(mImageBitmap, face.x, face.y, face.getWidth(), face.getHeight());
 
             //NOTE: test code
             ImageUtils.savePicture(getContext(), bitmap);

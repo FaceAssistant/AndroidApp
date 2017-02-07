@@ -16,8 +16,8 @@ public class CustomFace {
 
     public final int x;
     public final int y;
-    public int width;
-    public int height;
+    private int width;
+    private int height;
 
     public CustomFace(Face face, int maxX, int maxY){
         PointF point = face.getPosition();

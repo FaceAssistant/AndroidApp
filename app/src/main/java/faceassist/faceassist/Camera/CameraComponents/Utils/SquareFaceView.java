@@ -35,13 +35,13 @@ public class SquareFaceView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         mPaint.setColor(mSelected ? Color.GREEN : Color.RED);
-        canvas.drawRect(0, 0,mFace.width, mFace.height, mPaint);
+        canvas.drawRect(0, 0,mFace.getWidth(), mFace.getHeight(), mPaint);
     }
 
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        setMeasuredDimension((int)mFace.width, (int)mFace.height);
+        setMeasuredDimension(mFace.getWidth(), mFace.getHeight());
     }
 
     public CustomFace getFace(){
