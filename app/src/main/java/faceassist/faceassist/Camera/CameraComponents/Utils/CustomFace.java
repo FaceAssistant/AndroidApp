@@ -43,7 +43,7 @@ public class CustomFace {
             height = (int)face.getHeight();
         }
 
-        //height greater than image
+        //bottom greater than image
         if (height + y > maxY) height = maxY - y;
     }
 

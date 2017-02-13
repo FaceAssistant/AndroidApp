@@ -3,4 +3,12 @@
 
     <string name="camera_perm_title">Take photos with FaceAssist\'s camera</string>
     <string name="camera_perm_text">FaceAssist needs permission to use your phones camera to take pictures.</string>
+
+
+    <!-- drawer menu strings -->
+    <string name="menu_title_create">Add face</string>
+    <string name="menu_title_current_faces">Current faces</string>
+    <string name="menu_title_settings">Settings</string>
+
+
 </resources>

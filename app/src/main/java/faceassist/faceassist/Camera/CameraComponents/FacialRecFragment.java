@@ -277,7 +277,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
             Bitmap bitmap = Bitmap.createBitmap(mImageBitmap, face.x, face.y, face.getWidth(), face.getHeight());
 
             //NOTE: test code
-            ImageUtils.savePicture(getContext(), bitmap);
+            //ImageUtils.savePicture(getContext(), bitmap);
 
             return ImageUtils.encodeImageBase64(bitmap);
 
@@ -286,12 +286,6 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
         return null;
     }
 
-    private int clip(int input, int min, int max) {
-        if (input < min) return 0;
-        if (input > max) return max;
-
-        return input;
-    }
 
     @Override
     public void onFaceSelected(SquareFaceView v) {

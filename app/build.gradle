@@ -36,6 +36,7 @@ dependencies {
 
     compile 'com.google.android.gms:play-services-vision:10.0.1'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
+    compile 'de.hdodenhof:circleimageview:2.1.0'
 
 
 }
