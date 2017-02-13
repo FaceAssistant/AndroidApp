@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
-import faceassist.faceassist.Camera.CameraActivity;
+import faceassist.faceassist.Components.Activities.Camera.CameraActivity;
 
 /**
  * Created by QiFeng on 1/30/17.

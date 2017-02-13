@@ -3,21 +3,21 @@
 
     <group android:checkableBehavior="none">
 
-        <item android:id="@+id/create"
+        <item android:id="@+id/menu_create"
               android:checkable="false"
               android:checked="false"
               android:icon="@drawable/ic_action_add_circle"
               android:title="@string/menu_title_create"
         />
 
-        <item android:id="@+id/current"
+        <item android:id="@+id/menu_current"
               android:checkable="false"
               android:checked="false"
               android:icon="@drawable/ic_action_face"
               android:title="@string/menu_title_current_faces"
         />
 
-        <item android:id="@+id/settings"
+        <item android:id="@+id/menu_settings"
               android:checkable="false"
               android:checked="false"
               android:icon="@drawable/ic_action_settings"

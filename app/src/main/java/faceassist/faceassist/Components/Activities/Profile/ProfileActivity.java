@@ -1,4 +1,4 @@
-package faceassist.faceassist.Camera.Profile;
+package faceassist.faceassist.Components.Activities.Profile;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

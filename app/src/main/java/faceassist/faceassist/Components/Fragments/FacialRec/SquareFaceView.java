@@ -1,4 +1,4 @@
-package faceassist.faceassist.Camera.CameraComponents.Utils;
+package faceassist.faceassist.Components.Fragments.FacialRec;
 
 import android.content.Context;
 import android.graphics.Canvas;

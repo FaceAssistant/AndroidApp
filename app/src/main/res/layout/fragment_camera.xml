@@ -13,13 +13,13 @@
         android:layout_height="?android:actionBarSize"
         android:layout_alignParentTop="true"
         android:background="@color/colorPrimary"
-        app:navigationIcon="@drawable/ic_action_clear"
+        app:navigationIcon="@drawable/ic_action_menu"
         app:title="Camera"
         app:titleTextColor="@color/pureWhite"
     />
 
 
-    <faceassist.faceassist.Camera.CameraComponents.CameraTextureView
+    <faceassist.faceassist.Components.Fragments.Camera.CameraTextureView
         android:id="@+id/texture"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -1,6 +1,7 @@
-package faceassist.faceassist.Camera.CameraComponents;
+package faceassist.faceassist.Components.Fragments.Camera;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -16,13 +17,16 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.ImageUtils;
+import faceassist.faceassist.Utils.OnToolbarMenuIconPressed;
 import faceassist.faceassist.Utils.PermissionUtils;
 import rx.Observable;
 import rx.Subscriber;
@@ -39,7 +43,13 @@ import static rx.schedulers.Schedulers.io;
 public class CameraFragment extends Fragment implements TextureView.SurfaceTextureListener {
 
     public static final String TAG = CameraFragment.class.getSimpleName();
-    public static final int MAX_RESOLUTION = 2400;
+
+    private static final int MAX_RESOLUTION;
+    static {
+        int width = Resources.getSystem().getDisplayMetrics().widthPixels;
+        int height = Resources.getSystem().getDisplayMetrics().heightPixels;
+        MAX_RESOLUTION = 2 * (width > height ? width : height);
+    }
 
     private Camera mCamera;
     private CameraTextureView mCameraTextureView;
@@ -78,6 +88,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_camera, container, false);
 
+
         mCameraTextureView = (CameraTextureView) root.findViewById(R.id.texture);
         mCameraTextureView.setSurfaceTextureListener(this);
 
@@ -92,7 +103,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
             @Override
             public void onClick(View v) {
                 if (mIsSafeToTakePhoto)
-                    getActivity().finish();
+                    ((OnToolbarMenuIconPressed) getActivity()).onToolbarMenuIconPressed();
             }
         });
 
@@ -343,6 +354,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         Camera.Parameters parameters = mCamera.getParameters();
 
         Camera.Size bestPreviewSize = determineBestSize(mCamera.getParameters().getSupportedPreviewSizes());
+        Log.i(TAG, String.format(Locale.ENGLISH, "cam size: %d x %d", bestPreviewSize.width, bestPreviewSize.height));
         parameters.setPreviewSize(bestPreviewSize.width, bestPreviewSize.height);
 
         List<String> focusmodes = parameters.getSupportedFocusModes();

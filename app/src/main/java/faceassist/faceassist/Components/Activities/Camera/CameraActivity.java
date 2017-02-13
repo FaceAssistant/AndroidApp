@@ -1,16 +1,19 @@
-package faceassist.faceassist.Camera;
+package faceassist.faceassist.Components.Activities.Camera;
 
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -21,20 +24,22 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 import faceassist.faceassist.API.API;
-import faceassist.faceassist.Camera.CameraComponents.CameraFragment;
-import faceassist.faceassist.Camera.CameraComponents.FacialRecFragment;
-import faceassist.faceassist.Camera.CameraComponents.NeedPermissionFragment;
-import faceassist.faceassist.Camera.Profile.Profile;
-import faceassist.faceassist.Camera.Profile.ProfileActivity;
+import faceassist.faceassist.Components.Fragments.Camera.CameraFragment;
+import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecFragment;
+import faceassist.faceassist.Components.Fragments.NeedPermissions.NeedPermissionFragment;
+import faceassist.faceassist.Components.Activities.Profile.Profile;
+import faceassist.faceassist.Components.Activities.Profile.ProfileActivity;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.OnFinished;
+import faceassist.faceassist.Utils.OnToolbarMenuIconPressed;
 import faceassist.faceassist.Utils.PermissionUtils;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
 public class CameraActivity extends AppCompatActivity implements CameraFragment.OnImageTaken,
-        NeedPermissionFragment.OnCheckPermissionClicked, FacialRecFragment.OnConfirmFace{
+        NeedPermissionFragment.OnCheckPermissionClicked, FacialRecFragment.OnConfirmFace,
+        NavigationView.OnNavigationItemSelectedListener, OnToolbarMenuIconPressed {
 
     public static final String TAG = CameraActivity.class.getSimpleName();
     private static final String CAMERA_FRAGS = "camera_fragments";
@@ -43,12 +48,19 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
     protected boolean mHasCameraPermission = false;
     protected boolean mReceivedRequestPermissionResults = false;
 
+    private DrawerLayout mDrawerLayout;
+    private NavigationView mNavigationView;
+
     private Call mFacialSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mNavigationView = (NavigationView) mDrawerLayout.findViewById(R.id.drawer);
+        mNavigationView.setNavigationItemSelectedListener(this);
 
         clearBackStack();
         checkPermissions();
@@ -130,17 +142,20 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
 
 
 
-
+    //when cameraFragment takes picture
+    //input is the uri of image
     @Override
     public void onImageTake(Uri image) {
         addFragment(FacialRecFragment.newInstance(image), FacialRecFragment.TAG);
     }
 
+    //check permissions
     @Override
     public void onCheckPermissionClicked() {
         checkPermissions();
     }
 
+    //when a face is selected
     @Override
     public void onConfirmFace(String bitmapString, OnFinished onFinished) {
 
@@ -216,9 +231,36 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
                 });
     }
 
+
     @Override
     public void onStopSearch() {
         if (mFacialSearch != null) mFacialSearch.cancel();
         mFacialSearch = null;
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        //note: use a runnable 250ish
+        switch (item.getItemId()){
+            case R.id.menu_create:
+                //// TODO: 2/13/17 create activity
+                break;
+            case R.id.menu_current:
+                //// TODO: 2/13/17 current faces
+                break;
+            case R.id.menu_settings:
+                //// TODO: 2/13/17 settings
+                break;
+            default:
+                break;
+        }
+
+        mDrawerLayout.closeDrawers();
+        return true;
+    }
+
+    @Override
+    public void onToolbarMenuIconPressed() {
+        mDrawerLayout.openDrawer(mNavigationView);
     }
 }

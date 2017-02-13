@@ -1,4 +1,4 @@
-package faceassist.faceassist.Camera.CameraComponents;
+package faceassist.faceassist.Components.Fragments.NeedPermissions;
 
 import android.content.Context;
 import android.os.Bundle;

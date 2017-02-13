@@ -1,4 +1,4 @@
-package faceassist.faceassist.Camera.Profile;
+package faceassist.faceassist.Components.Activities.Profile;
 
 import android.os.Parcel;
 import android.os.Parcelable;

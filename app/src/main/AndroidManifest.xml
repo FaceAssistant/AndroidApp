@@ -16,12 +16,12 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".Camera.CameraActivity"
+            android:name=".Components.Activities.Camera.CameraActivity"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name=".Camera.Profile.ProfileActivity"
+            android:name=".Components.Activities.Profile.ProfileActivity"
             android:screenOrientation="portrait"
         />
 

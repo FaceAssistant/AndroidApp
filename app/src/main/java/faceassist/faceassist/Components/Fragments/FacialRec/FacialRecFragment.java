@@ -1,4 +1,4 @@
-package faceassist.faceassist.Camera.CameraComponents;
+package faceassist.faceassist.Components.Fragments.FacialRec;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -27,9 +27,7 @@ import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
 
-import faceassist.faceassist.Camera.CameraComponents.Utils.CustomFace;
-import faceassist.faceassist.Camera.CameraComponents.Utils.SquareFaceView;
-import faceassist.faceassist.Camera.CameraComponents.Utils.SquareFaceView.OnFaceSelected;
+import faceassist.faceassist.Components.Fragments.FacialRec.SquareFaceView.OnFaceSelected;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.OnFinished;
