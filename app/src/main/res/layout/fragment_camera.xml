@@ -40,15 +40,28 @@
         android:layout_height="match_parent"
         android:layout_below="@id/space"
         android:background="@color/colorPrimary"
+        android:clickable="true"
     >
 
+        <android.support.v7.widget.AppCompatCheckBox
+            android:id="@+id/reverse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|top"
+            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:button="@drawable/checkbox_reversecam"
+        />
 
-        <!--<ImageView-->
-        <!--android:id="@+id/capture_button"-->
-        <!--android:layout_width="72dp"-->
-        <!--android:layout_height="72dp"-->
-        <!--android:layout_gravity="center"-->
-        <!--android:src="@drawable/camera_button"/>-->
+        <android.support.v7.widget.AppCompatCheckBox
+            android:id="@+id/flash"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|top"
+            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:button="@drawable/checkbox_flash"
+        />
+
+
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/capture_button"
             android:layout_width="wrap_content"

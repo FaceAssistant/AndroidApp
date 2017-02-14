@@ -1,6 +1,7 @@
 package faceassist.faceassist.Components.Fragments.Camera;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +19,9 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
 
 import java.io.File;
@@ -63,6 +68,13 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
     private boolean mSurfaceAlreadyCreated = false;
     private boolean mIsSafeToTakePhoto = false;
 
+    private int mCameraId;
+
+    private AppCompatCheckBox mReverseCheckbox;
+    private AppCompatCheckBox mFlashCheckbox;
+
+    private Handler mTakePictureHander = new Handler();
+
     public CameraFragment() {
 
     }
@@ -92,6 +104,11 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         mCameraTextureView = (CameraTextureView) root.findViewById(R.id.texture);
         mCameraTextureView.setSurfaceTextureListener(this);
 
+        mFlashCheckbox = (AppCompatCheckBox) root.findViewById(R.id.flash);
+        mReverseCheckbox = (AppCompatCheckBox) root.findViewById(R.id.reverse);
+
+        setUpReverseButton();
+
         root.findViewById(R.id.capture_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -111,11 +128,38 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         return root;
     }
 
+    private void setUpReverseButton(){
+        if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)){
+            mReverseCheckbox.setChecked(false);
+            mReverseCheckbox.setClickable(false);
+        }else {
+            mReverseCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if (mIsSafeToTakePhoto) restartPreview();
+                }
+            });
+        }
+    }
+
 
     private void takePicture() {
         if (mIsSafeToTakePhoto) {
             setSafeToTakePhoto(false);
-            takeImageOfView();
+
+            if (mFlashCheckbox.isChecked()) {
+                turnOnFlashLight();
+
+                // need to wait for flashlight to turn on fully
+                mTakePictureHander.postDelayed(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                takeImageOfView();
+                            }
+                        }, 300);
+
+            } else takeImageOfView();
         }
     }
 
@@ -129,6 +173,12 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
                             public void call(Uri uri) {
                                 if (getActivity() == null) return;
 
+                                Camera.Parameters p = mCamera.getParameters();
+                                if (p.getSupportedFlashModes() != null && p.getSupportedFlashModes().contains(Camera.Parameters.FLASH_MODE_OFF)) {
+                                    p.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                                    mCamera.setParameters(p);
+                                }
+
                                 if (mOnImageTaken != null) {
                                     mOnImageTaken.onImageTake(uri);
                                 }
@@ -137,6 +187,18 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
                             }
                         }
                 );
+    }
+
+    //returns true if flashlight turned on
+    private boolean turnOnFlashLight() {
+        List<String> flashModes = mCamera.getParameters().getSupportedFlashModes();
+        if (flashModes != null && flashModes.contains(Camera.Parameters.FLASH_MODE_TORCH)) {
+            Camera.Parameters p = mCamera.getParameters();
+            p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+            mCamera.setParameters(p);
+            return true;
+        }
+        return false;
     }
 
     private Uri stopCameraAndSaveImage() {
@@ -308,8 +370,8 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
      * Restart the camera preview
      */
     private void restartPreview() {
+        mCameraId = mReverseCheckbox.isChecked() ? getFrontCameraID() : getBackCameraID();
         if (mCamera != null) {
-
             mStartCameraSubscription = Observable.create(
                     new Observable.OnSubscribe<Void>() {
                         @Override
@@ -327,7 +389,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
                             new Subscriber<Void>() {
                                 @Override
                                 public void onCompleted() {
-                                    if (getCamera(getBackCameraID())) { //were able to find a camera to use
+                                    if (getCamera(mCameraId)) { //were able to find a camera to use
                                         startCameraPreview();
                                     }
                                 }
@@ -341,7 +403,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
                                 public void onNext(Void aVoid) {
                                 }
                             });
-        } else if (getCamera(getBackCameraID())) { //were able to find a camera to use
+        } else if (getCamera(mCameraId)) { //were able to find a camera to use
             startCameraPreview();
         }
     }
@@ -393,9 +455,10 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
     }
 
 
+
     private void determineDisplayOrientation() {
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        Camera.getCameraInfo(getBackCameraID(), cameraInfo);
+        Camera.getCameraInfo(mCameraId, cameraInfo);
 
         // Clockwise rotation needed to align the window display to the natural position
         int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
@@ -441,6 +504,15 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
 
     private int getBackCameraID() {
         return Camera.CameraInfo.CAMERA_FACING_BACK;
+    }
+
+    private int getFrontCameraID() {
+        PackageManager pm = getActivity().getPackageManager();
+        if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)) {
+            return Camera.CameraInfo.CAMERA_FACING_FRONT;
+        }
+
+        return getBackCameraID();
     }
 
 
