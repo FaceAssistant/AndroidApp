@@ -19,10 +19,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.CompoundButton;
-import android.widget.RelativeLayout;
 
 import java.io.File;
 import java.io.IOException;
@@ -208,6 +205,8 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
 
     private Uri saveBitmap() {
         Bitmap original = mCameraTextureView.getBitmap();
+        //return Uri.fromFile(ImageUtils.savePictureToCache(getContext(), original));
+
         int width = original.getWidth();
         Bitmap previewBitmap = Bitmap.createBitmap(original, 0, 0, width, width);
 
@@ -234,6 +233,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         super.onPause();
 
         mShowCameraHandler.removeCallbacksAndMessages(null);
+        mTakePictureHander.removeCallbacksAndMessages(null);
 
         if (mStartCameraSubscription != null) mStartCameraSubscription.unsubscribe();
         if (mProcessImageSubscriptions != null) mProcessImageSubscriptions.unsubscribe();

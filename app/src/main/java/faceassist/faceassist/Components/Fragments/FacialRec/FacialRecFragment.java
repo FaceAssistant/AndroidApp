@@ -2,6 +2,7 @@ package faceassist.faceassist.Components.Fragments.FacialRec;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,6 +27,9 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import faceassist.faceassist.Components.Fragments.FacialRec.SquareFaceView.OnFaceSelected;
 import faceassist.faceassist.R;
@@ -61,6 +65,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
 
     private Subscription mFacialRecSubscription;
     private Subscription mCropSubscription;
+
     private FrameLayout vImageParent;
     private Toolbar vToolbar;
 
@@ -140,37 +145,76 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
 
         if (mImageUri != null) {
 
-            Glide.with(this)
-                    .load(mImageUri)
-                    .dontAnimate()
-                    .into(vImageView);
-
-            //loading image and processing image separately so it's faster and less lag
-            DisplayMetrics metrics = new DisplayMetrics();
-            getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            int smaller = metrics.widthPixels > metrics.heightPixels ? metrics.heightPixels : metrics.widthPixels;
-
-            Glide.with(getContext())
-                    .load(mImageUri)
-                    .asBitmap()
-//                    .centerCrop()
-                    .listener(new RequestListener<Uri, Bitmap>() {
+            mFacialRecSubscription = Observable.just(loadImages(mImageUri))
+                    .subscribeOn(io())
+                    .observeOn(mainThread())
+                    .subscribe(new Action1<Bitmap>() {
                         @Override
-                        public boolean onException(Exception e, Uri model, Target<Bitmap> target, boolean isFirstResource) {
-                            return true;
+                        public void call(final Bitmap bitmap) {
+                            if (bitmap != null) {
+                                vImageView.setImageBitmap(bitmap);
+                                vImageView.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        runFacialRec(bitmap);
+                                    }
+                                });
+                            }
                         }
-
-                        @Override
-                        public boolean onResourceReady(Bitmap resource, Uri model, Target<Bitmap> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            Log.i(TAG, "onResourceReady: w " + resource.getWidth());
-                            Log.i(TAG, "onResourceReady: h " + resource.getHeight());
-                            runFacialRec(resource);
-                            return true;
-                        }
-                    }).into(smaller, smaller);
+                    });
+//            Glide.with(this)
+//                    .load(mImageUri)
+//                    .dontAnimate()
+//                    .into(vImageView);
+//
+//            //loading image and processing image separately so it's faster and less lag
+//            DisplayMetrics metrics = new DisplayMetrics();
+//            getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+//            int smaller = metrics.widthPixels > metrics.heightPixels ? metrics.heightPixels : metrics.widthPixels;
+//
+//            Glide.with(getContext())
+//                    .load(mImageUri)
+//                    .asBitmap()
+////                    .centerCrop()
+//                    .listener(new RequestListener<Uri, Bitmap>() {
+//                        @Override
+//                        public boolean onException(Exception e, Uri model, Target<Bitmap> target, boolean isFirstResource) {
+//                            return true;
+//                        }
+//
+//                        @Override
+//                        public boolean onResourceReady(Bitmap resource, Uri model, Target<Bitmap> target, boolean isFromMemoryCache, boolean isFirstResource) {
+//                            Log.i(TAG, "onResourceReady: w " + resource.getWidth());
+//                            Log.i(TAG, "onResourceReady: h " + resource.getHeight());
+//                            runFacialRec(resource);
+//                            return true;
+//                        }
+//                    }).into(smaller, smaller);
 
         }
+    }
 
+    private Bitmap loadImages(Uri image){
+        int height = Resources.getSystem().getDisplayMetrics().heightPixels;
+        int width = Resources.getSystem().getDisplayMetrics().widthPixels;
+        int reqSize = height > width ? width : height;
+
+        try {
+            Bitmap cropped = ImageUtils.decodeUri(getContext(), image, reqSize);
+            Log.i(TAG, "loadImages:cropped "+cropped.getHeight());
+            if (cropped.getHeight() == reqSize) return cropped;
+
+
+            Bitmap scaled = Bitmap.createScaledBitmap(cropped, reqSize, reqSize, true);
+            Log.i(TAG, "loadImages: scaled "+scaled.getHeight());
+            if (scaled != cropped) cropped.recycle();
+            return scaled;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Error loading iamge", Toast.LENGTH_SHORT).show();
+            return null;
+        }
 
     }
 
