@@ -162,35 +162,6 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
                             }
                         }
                     });
-//            Glide.with(this)
-//                    .load(mImageUri)
-//                    .dontAnimate()
-//                    .into(vImageView);
-//
-//            //loading image and processing image separately so it's faster and less lag
-//            DisplayMetrics metrics = new DisplayMetrics();
-//            getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-//            int smaller = metrics.widthPixels > metrics.heightPixels ? metrics.heightPixels : metrics.widthPixels;
-//
-//            Glide.with(getContext())
-//                    .load(mImageUri)
-//                    .asBitmap()
-////                    .centerCrop()
-//                    .listener(new RequestListener<Uri, Bitmap>() {
-//                        @Override
-//                        public boolean onException(Exception e, Uri model, Target<Bitmap> target, boolean isFirstResource) {
-//                            return true;
-//                        }
-//
-//                        @Override
-//                        public boolean onResourceReady(Bitmap resource, Uri model, Target<Bitmap> target, boolean isFromMemoryCache, boolean isFirstResource) {
-//                            Log.i(TAG, "onResourceReady: w " + resource.getWidth());
-//                            Log.i(TAG, "onResourceReady: h " + resource.getHeight());
-//                            runFacialRec(resource);
-//                            return true;
-//                        }
-//                    }).into(smaller, smaller);
-
         }
     }
 
@@ -212,7 +183,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
 
         } catch (IOException e) {
             e.printStackTrace();
-            Toast.makeText(getContext(), "Error loading iamge", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Error loading image", Toast.LENGTH_SHORT).show();
             return null;
         }
 
@@ -300,9 +271,9 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
         mCropSubscription = Observable.just(cropImage())
                 .subscribeOn(io())
                 .observeOn(mainThread())
-                .subscribe(new Action1<String>() {
+                .subscribe(new Action1<Bitmap>() {
                     @Override
-                    public void call(String bitmap) {
+                    public void call(Bitmap bitmap) {
                         if (bitmap != null && mOnConfirmFace != null) {
                             mOnConfirmFace.onConfirmFace(bitmap, FacialRecFragment.this);
                         } else {
@@ -312,7 +283,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
                 });
     }
 
-    private String cropImage() {
+    private Bitmap cropImage() {
         if (mImageBitmap != null) {
             CustomFace face = mSelectedFace.getFace();
 
@@ -321,7 +292,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
             //NOTE: test code
             //ImageUtils.savePicture(getContext(), bitmap);
 
-            return ImageUtils.encodeImageBase64(bitmap);
+            return bitmap; //ImageUtils.encodeImageBase64(bitmap);
 
         }
 
@@ -347,8 +318,9 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
     }
 
     public interface OnConfirmFace {
-        void onConfirmFace(String bitmapString, OnFinished onFinished);
+        void onConfirmFace(Bitmap bitmap, OnFinished onFinished);
 
+        //stop actions if FacialRecFragment is destroyed
         void onStopSearch();
     }
 

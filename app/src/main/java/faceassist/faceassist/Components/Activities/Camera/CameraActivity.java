@@ -3,7 +3,9 @@ package faceassist.faceassist.Components.Activities.Camera;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -24,12 +26,14 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 import faceassist.faceassist.API.API;
+import faceassist.faceassist.Components.Activities.AddFace.AddFaceActivity;
 import faceassist.faceassist.Components.Fragments.Camera.CameraFragment;
 import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecFragment;
 import faceassist.faceassist.Components.Fragments.NeedPermissions.NeedPermissionFragment;
 import faceassist.faceassist.Components.Activities.Profile.Profile;
 import faceassist.faceassist.Components.Activities.Profile.ProfileActivity;
 import faceassist.faceassist.R;
+import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.OnFinished;
 import faceassist.faceassist.Utils.OnToolbarMenuIconPressed;
 import faceassist.faceassist.Utils.PermissionUtils;
@@ -157,13 +161,15 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
 
     //when a face is selected
     @Override
-    public void onConfirmFace(String bitmapString, OnFinished onFinished) {
+    public void onConfirmFace(Bitmap bitmap, OnFinished onFinished) {
 
         //turn this into MVP later
 
         //Log.i(TAG, "onConfirmFace: "+bitmap);
+
+        //// TODO: 2/13/17 ASYNC
         HashMap<String, Object> params = new HashMap<>();
-        params.put("image", bitmapString);
+        params.put("image", ImageUtils.encodeImageBase64(bitmap));
 
         final WeakReference<OnFinished> mOnFinishedWeakReference = new WeakReference<>(onFinished);
 
@@ -238,23 +244,37 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
         mFacialSearch = null;
     }
 
+    private Handler mOnDrawerClosedHandler = new Handler();
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         //note: use a runnable 250ish
+        final Class c;
         switch (item.getItemId()){
             case R.id.menu_create:
-                //// TODO: 2/13/17 create activity
+                c = AddFaceActivity.class;
                 break;
-            case R.id.menu_current:
-                //// TODO: 2/13/17 current faces
-                break;
-            case R.id.menu_settings:
-                //// TODO: 2/13/17 settings
-                break;
+//            case R.id.menu_current:
+//                //// TODO: 2/13/17 current faces
+//                break;
+//            case R.id.menu_settings:
+//                //// TODO: 2/13/17 settings
+//                break;
             default:
+                c = null;
                 break;
         }
 
+        if (c != null) {
+            mOnDrawerClosedHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Intent i = new Intent(CameraActivity.this, c);
+                    startActivity(i);
+                }
+            }, 350);
+
+        }
         mDrawerLayout.closeDrawers();
         return true;
     }
