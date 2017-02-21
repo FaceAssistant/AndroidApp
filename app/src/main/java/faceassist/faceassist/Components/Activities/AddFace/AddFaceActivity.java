@@ -151,12 +151,13 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                 params.put(textEntry.getTitle(), textEntry.getBody());
             }else if (entry instanceof  ImageEntry){
                 ImageEntry imageEntry = (ImageEntry) entry;
-
-                try {
-                    array.put(FileUtils.encodeFileBase64(new File(imageEntry.getContent())));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                if (imageEntry.getImageUri() != null) {
+                    try {
+                        array.put(FileUtils.encodeFileBase64(new File(imageEntry.getContent())));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }else Log.i(TAG, "getRequestBody: entry was null");
             }
         }
         params.put("images", array);
