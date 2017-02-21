@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 
 /**
@@ -26,6 +27,8 @@ import java.util.Date;
  */
 
 public class ImageUtils {
+
+    public static final String DATE_PATTERN = "yyMMddHHmmssZ";
 
     public static String encodeImageBase64(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -47,7 +50,7 @@ public class ImageUtils {
             }
         }
 
-        String timeStamp = SimpleDateFormat.getDateTimeInstance().format(new Date());
+        String timeStamp = new SimpleDateFormat(DATE_PATTERN, Locale.US).format(new Date());
         File mediaFile = new File(
                 mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg"
         );
@@ -85,7 +88,7 @@ public class ImageUtils {
     public static File savePictureToCache(Context context, Bitmap bitmap) {
         if (context == null) return  null;
 
-        String timeStamp = SimpleDateFormat.getDateTimeInstance().format(new Date());
+        String timeStamp = new SimpleDateFormat(DATE_PATTERN, Locale.US).format(new Date());
         File image = new File(
                 context.getCacheDir() +  File.separator + "IMG_" + timeStamp + ".jpg");
         // Saving the bitmap
