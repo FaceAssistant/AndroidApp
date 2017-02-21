@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">FaceAssist</string>
 
+
+    <string name="def_perm_title">Permissions</string>
+    <string name="def_perm_text">FaceAssist needs permission to perform this action.</string>
+
     <string name="camera_perm_title">Take photos with FaceAssist\'s camera</string>
     <string name="camera_perm_text">FaceAssist needs permission to use your phones camera to take
         pictures.

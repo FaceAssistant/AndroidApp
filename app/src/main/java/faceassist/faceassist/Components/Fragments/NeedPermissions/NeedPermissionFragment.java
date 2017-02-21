@@ -2,6 +2,7 @@ package faceassist.faceassist.Components.Fragments.NeedPermissions;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -47,8 +48,8 @@ public class NeedPermissionFragment extends Fragment {
         bundle.putInt(TITLE_ID, title);
         bundle.putInt(TEXT_ID, text);
 
-        fragment.mTitleId = title;
-        fragment.mTextId = text;
+        fragment.setArguments(bundle);
+
         return fragment;
     }
 
@@ -67,8 +68,8 @@ public class NeedPermissionFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_need_permission, container, false);
-
     }
+
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {

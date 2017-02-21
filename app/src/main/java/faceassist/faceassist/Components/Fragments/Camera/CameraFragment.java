@@ -42,35 +42,24 @@ import static rx.schedulers.Schedulers.io;
  * Created by QiFeng on 1/30/17.
  */
 
-public class CameraFragment extends Fragment implements TextureView.SurfaceTextureListener {
+public class CameraFragment extends Fragment implements TextureView.SurfaceTextureListener, CameraPresenter.RotationHelper,
+        CameraContract.View, CameraPresenter.BitmapSaver {
 
     public static final String TAG = CameraFragment.class.getSimpleName();
 
-    private static final int MAX_RESOLUTION;
-    static {
-        int width = Resources.getSystem().getDisplayMetrics().widthPixels;
-        int height = Resources.getSystem().getDisplayMetrics().heightPixels;
-        MAX_RESOLUTION = 2 * (width > height ? width : height);
-    }
-
-    private Camera mCamera;
     private CameraTextureView mCameraTextureView;
     private SurfaceTexture mSurfaceHolder;
 
     private OnImageTaken mOnImageTaken;
-
-    private Subscription mProcessImageSubscriptions;
-    private Subscription mStartCameraSubscription;
-
     private boolean mSurfaceAlreadyCreated = false;
-    private boolean mIsSafeToTakePhoto = false;
 
-    private int mCameraId;
+    //private int mCameraId;
 
     private AppCompatCheckBox mReverseCheckbox;
     private AppCompatCheckBox mFlashCheckbox;
 
-    private Handler mTakePictureHander = new Handler();
+    private CameraContract.Presenter mCameraPresenter;
+
 
     public CameraFragment() {
 
@@ -97,6 +86,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_camera, container, false);
 
+        mCameraPresenter = new CameraPresenter(this, this, this);
 
         mCameraTextureView = (CameraTextureView) root.findViewById(R.id.texture);
         mCameraTextureView.setSurfaceTextureListener(this);
@@ -109,14 +99,14 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         root.findViewById(R.id.capture_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                takePicture();
+                mCameraPresenter.takePicture(mCameraTextureView, mFlashCheckbox.isChecked());
             }
         });
 
         ((Toolbar) root.findViewById(R.id.toolbar)).setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mIsSafeToTakePhoto)
+                if (mCameraPresenter.safeToTakePictures())
                     ((OnToolbarMenuIconPressed) getActivity()).onToolbarMenuIconPressed();
             }
         });
@@ -133,89 +123,10 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
             mReverseCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    if (mIsSafeToTakePhoto) restartPreview();
+                    mCameraPresenter.swapCamera(mCameraTextureView, mSurfaceHolder,getCameraId());
                 }
             });
         }
-    }
-
-
-    private void takePicture() {
-        if (mIsSafeToTakePhoto) {
-            setSafeToTakePhoto(false);
-
-            if (mFlashCheckbox.isChecked()) {
-                turnOnFlashLight();
-
-                // need to wait for flashlight to turn on fully
-                mTakePictureHander.postDelayed(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                takeImageOfView();
-                            }
-                        }, 300);
-
-            } else takeImageOfView();
-        }
-    }
-
-    private void takeImageOfView() {
-        mProcessImageSubscriptions = Observable.just(stopCameraAndSaveImage())
-                .subscribeOn(io())
-                .observeOn(mainThread())
-                .subscribe(
-                        new Action1<Uri>() {
-                            @Override
-                            public void call(Uri uri) {
-                                if (getActivity() == null) return;
-
-                                Camera.Parameters p = mCamera.getParameters();
-                                if (p.getSupportedFlashModes() != null && p.getSupportedFlashModes().contains(Camera.Parameters.FLASH_MODE_OFF)) {
-                                    p.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-                                    mCamera.setParameters(p);
-                                }
-
-                                if (mOnImageTaken != null) {
-                                    mOnImageTaken.onImageTake(uri);
-                                }
-
-                                setSafeToTakePhoto(true);
-                            }
-                        }
-                );
-    }
-
-    //returns true if flashlight turned on
-    private boolean turnOnFlashLight() {
-        List<String> flashModes = mCamera.getParameters().getSupportedFlashModes();
-        if (flashModes != null && flashModes.contains(Camera.Parameters.FLASH_MODE_TORCH)) {
-            Camera.Parameters p = mCamera.getParameters();
-            p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-            mCamera.setParameters(p);
-            return true;
-        }
-        return false;
-    }
-
-    private Uri stopCameraAndSaveImage() {
-        mCamera.stopPreview();
-        return saveBitmap();
-    }
-
-    private Uri saveBitmap() {
-        Bitmap original = mCameraTextureView.getBitmap();
-        //return Uri.fromFile(ImageUtils.savePictureToCache(getContext(), original));
-
-        int width = original.getWidth();
-        Bitmap previewBitmap = Bitmap.createBitmap(original, 0, 0, width, width);
-
-        if (previewBitmap != original)
-            original.recycle();
-
-        File f = ImageUtils.savePictureToCache(getContext(), previewBitmap);
-        previewBitmap.recycle();
-        return Uri.fromFile(f);
     }
 
     @Override
@@ -223,8 +134,8 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         super.onResume();
         //restartPreview() is called when camera preview surface is created
         //to prevent redundancy, only run this one if surfaceCreated() isn't called when fragment resumed
-        if (mSurfaceAlreadyCreated && PermissionUtils.hasCameraPermission(getContext()) && mCamera == null) {
-            restartPreview();
+        if (mSurfaceAlreadyCreated && PermissionUtils.hasCameraPermission(getContext()) && !mCameraPresenter.hasActiveCamera()) {
+            mCameraPresenter.restart(mCameraTextureView, mSurfaceHolder,getCameraId());
         }
     }
 
@@ -233,27 +144,8 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         super.onPause();
 
         mShowCameraHandler.removeCallbacksAndMessages(null);
-        mTakePictureHander.removeCallbacksAndMessages(null);
-
-        if (mStartCameraSubscription != null) mStartCameraSubscription.unsubscribe();
-        if (mProcessImageSubscriptions != null) mProcessImageSubscriptions.unsubscribe();
-
-
-        // stop the preview
-        if (mCamera != null) {
-            // we will get a runtime exception if camera had already been released, either by onpause
-            // or when we switched cameras
-            try {
-                mCamera.cancelAutoFocus();
-                stopCameraPreview();
-                mCamera.release();
-                mCamera = null;
-            } catch (RuntimeException e) {
-                Log.i(TAG, "onPause: release error : ignore");
-                mCamera.release();
-                mCamera = null;
-            }
-        }
+        mCameraPresenter.stopBackgroundTasks();
+        mCameraPresenter.release(mCameraTextureView);
     }
 
     //delay drawing the camera preview
@@ -271,7 +163,8 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
             mShowCameraHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (mCamera == null) restartPreview();
+                    if (!mCameraPresenter.hasActiveCamera())
+                        mCameraPresenter.restart(mCameraTextureView, mSurfaceHolder, getCameraId());
                 }
             }, 250);
         }
@@ -287,19 +180,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         mSurfaceAlreadyCreated = false;
         mShowCameraHandler.removeCallbacksAndMessages(null);
         // stop the preview
-        if (mCamera != null) {
-            // we will get a runtime exception if camera had already been released, either by onpause
-            // or when we switched cameras
-            try {
-                stopCameraPreview();
-                mCamera.release();
-                mCamera = null;
-            } catch (RuntimeException e) {
-                Log.i(TAG, "onSurfaceTextureDestroyed: release error : ignore");
-                mCamera.release();
-                mCamera = null;
-            }
-        }
+        mCameraPresenter.release(mCameraTextureView);
         return false;
     }
 
@@ -308,157 +189,12 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
 
     }
 
-    /**
-     * Stop the camera preview
-     */
 
-    private void stopCameraPreview() {
-        setSafeToTakePhoto(false);
-        setCameraFocusReady(false);
-
-
-        // Nulls out callbacks, stops face detection
-        mCameraTextureView.setCamera(null);
-        mCamera.stopPreview();
-    }
-
-
-    /**
-     * Start the camera preview
-     */
-    private void startCameraPreview() {
-        determineDisplayOrientation();
-        setupCamera();
-
-        try {
-            mCamera.setPreviewTexture(mSurfaceHolder);
-            mCamera.startPreview();
-            setSafeToTakePhoto(true);
-            setCameraFocusReady(true);
-        } catch (IOException e) {
-            Log.d(TAG, "Can't start camera preview due to IOException " + e);
-            e.printStackTrace();
-        }
-    }
-
-
-    private void setSafeToTakePhoto(final boolean isSafeToTakePhoto) {
-        mIsSafeToTakePhoto = isSafeToTakePhoto;
-    }
-
-    private void setCameraFocusReady(final boolean isFocusReady) {
-        if (this.mCameraTextureView != null) {
-            mCameraTextureView.setIsFocusReady(isFocusReady);
-        }
-    }
-
-
-    //returns true if able to get camera and false if we werent able to
-    private boolean getCamera(int cameraID) {
-        try {
-            mCamera = Camera.open(cameraID);
-            mCameraTextureView.setCamera(mCamera);
-            return true;
-        } catch (Exception e) {
-            Log.d(TAG, "Can't open camera with id " + cameraID);
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Restart the camera preview
-     */
-    private void restartPreview() {
-        mCameraId = mReverseCheckbox.isChecked() ? getFrontCameraID() : getBackCameraID();
-        if (mCamera != null) {
-            mStartCameraSubscription = Observable.create(
-                    new Observable.OnSubscribe<Void>() {
-                        @Override
-                        public void call(Subscriber<? super Void> subscriber) {
-                            setSafeToTakePhoto(false);
-                            setCameraFocusReady(false);
-                            stopCameraPreview();
-                            mCamera.release();
-                            mCamera = null;
-                            subscriber.onCompleted();
-                        }
-                    }).subscribeOn(io())
-                    .observeOn(mainThread())
-                    .subscribe(
-                            new Subscriber<Void>() {
-                                @Override
-                                public void onCompleted() {
-                                    if (getCamera(mCameraId)) { //were able to find a camera to use
-                                        startCameraPreview();
-                                    }
-                                }
-
-                                @Override
-                                public void onError(Throwable e) {
-                                    e.printStackTrace();
-                                }
-
-                                @Override
-                                public void onNext(Void aVoid) {
-                                }
-                            });
-        } else if (getCamera(mCameraId)) { //were able to find a camera to use
-            startCameraPreview();
-        }
-    }
-
-    /**
-     * Setup the camera parameters
-     */
-    private void setupCamera() {
-        // Never keep a global parameters
-        Camera.Parameters parameters = mCamera.getParameters();
-
-        Camera.Size bestPreviewSize = determineBestSize(mCamera.getParameters().getSupportedPreviewSizes());
-        Log.i(TAG, String.format(Locale.ENGLISH, "cam size: %d x %d", bestPreviewSize.width, bestPreviewSize.height));
-        parameters.setPreviewSize(bestPreviewSize.width, bestPreviewSize.height);
-
-        List<String> focusmodes = parameters.getSupportedFocusModes();
-
-        // Set continuous picture focus, if it's supported
-        if (focusmodes != null && focusmodes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-        }
-
-        //parameters.setZoom(0);
-
-        // Lock in the changes
-        mCamera.setParameters(parameters);
-    }
-
-
-    private Camera.Size determineBestSize(List<Camera.Size> sizes) {
-
-        Camera.Size bestSize = null;
-
-        for (Camera.Size size : sizes) {
-            boolean isDesireRatio = (size.width / 4) == (size.height / 3) || (size.height / 4) == (size.width / 3);
-            boolean isBetterSize = (bestSize == null) || size.width > bestSize.width;
-
-            if (isDesireRatio && isBetterSize && size.height < MAX_RESOLUTION && size.width < MAX_RESOLUTION) {
-                bestSize = size;
-            }
-        }
-
-        if (bestSize == null) {
-            Log.d(TAG, "cannot find the best camera size");
-            return sizes.get(sizes.size() - 1);
-        }
-
-        return bestSize;
-    }
-
-
-
-    private void determineDisplayOrientation() {
+    @Override
+    public int getRotation() {
+        int cameraId = getCameraId();
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        Camera.getCameraInfo(mCameraId, cameraInfo);
+        Camera.getCameraInfo(cameraId, cameraInfo);
 
         // Clockwise rotation needed to align the window display to the natural position
         int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
@@ -499,9 +235,13 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
             displayOrientation = (cameraInfo.orientation - degrees + 360) % 360;
         }
 
-        mCamera.setDisplayOrientation(displayOrientation);
+        return displayOrientation;
     }
 
+
+    private int getCameraId(){
+        return mReverseCheckbox.isChecked() ? getFrontCameraID() : getBackCameraID();
+    }
     private int getBackCameraID() {
         return Camera.CameraInfo.CAMERA_FACING_BACK;
     }
@@ -513,6 +253,17 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         }
 
         return getBackCameraID();
+    }
+
+    @Override
+    public void onImageTaken(Uri image) {
+        mOnImageTaken.onImageTake(image);
+    }
+
+    @Override
+    public File saveBitmapToCache(Bitmap bitmap) {
+        if (getActivity() == null) return null;
+        return ImageUtils.savePictureToCache(getActivity(), bitmap);
     }
 
 

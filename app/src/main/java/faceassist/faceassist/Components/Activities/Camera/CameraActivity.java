@@ -66,7 +66,7 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
         mNavigationView = (NavigationView) mDrawerLayout.findViewById(R.id.drawer);
         mNavigationView.setNavigationItemSelectedListener(this);
 
-        clearBackStack();
+        //clearBackStack();
         checkPermissions();
 
         if (savedInstanceState == null && mHasCameraPermission)
@@ -94,14 +94,14 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
         getSupportFragmentManager().popBackStack(CAMERA_FRAGS, FragmentManager.POP_BACK_STACK_INCLUSIVE);
     }
 
-    protected final void launchFragment(Fragment fragment, String tag){
+    protected final void launchFragment(Fragment fragment, String tag) {
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, fragment, tag)
                 .commit();
     }
 
-    protected final void addFragment(Fragment fragment, String tag){
+    protected final void addFragment(Fragment fragment, String tag) {
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, fragment, tag)
@@ -118,7 +118,7 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
         if (!PermissionUtils.hasCameraPermission(this)) {
             mHasCameraPermission = false;
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_PERMISSIONS);
-        }else {
+        } else {
             mHasCameraPermission = true;
         }
     }
@@ -145,7 +145,6 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
     }
 
 
-
     //when cameraFragment takes picture
     //input is the uri of image
     @Override
@@ -156,7 +155,11 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
     //check permissions
     @Override
     public void onCheckPermissionClicked() {
+        //check for camera
         checkPermissions();
+        if (mHasCameraPermission)
+            launchFragment(CameraFragment.newInstance(), CameraFragment.TAG);
+
     }
 
     //when a face is selected
@@ -187,24 +190,26 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
                             @Override
                             public void run() {
                                 Toast.makeText(CameraActivity.this, "Failed to get response from server", Toast.LENGTH_SHORT).show();
-                                if (mOnFinishedWeakReference.get() != null) mOnFinishedWeakReference.get().onFinished();
+                                if (mOnFinishedWeakReference.get() != null)
+                                    mOnFinishedWeakReference.get().onFinished();
                             }
                         });
                     }
 
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
-                        if (response.isSuccessful()){
+                        if (response.isSuccessful()) {
                             try {
                                 JSONObject obj = new JSONObject(response.body().string());
-                                Log.d(TAG, "onResponse: "+obj.toString(4));
+                                Log.d(TAG, "onResponse: " + obj.toString(4));
 
                                 final Profile profile = new Profile(obj);
 
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        if (mOnFinishedWeakReference.get() != null) mOnFinishedWeakReference.get().onFinished();
+                                        if (mOnFinishedWeakReference.get() != null)
+                                            mOnFinishedWeakReference.get().onFinished();
 
                                         Intent intent = new Intent(CameraActivity.this, ProfileActivity.class);
                                         intent.putExtra(ProfileActivity.ARG_PROFILE, profile);
@@ -218,20 +223,22 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
                                     @Override
                                     public void run() {
                                         Toast.makeText(CameraActivity.this, "Error parsing", Toast.LENGTH_SHORT).show();
-                                        if (mOnFinishedWeakReference.get() != null) mOnFinishedWeakReference.get().onFinished();
+                                        if (mOnFinishedWeakReference.get() != null)
+                                            mOnFinishedWeakReference.get().onFinished();
                                     }
                                 });
 
                             }
-                        }else {
+                        } else {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     Toast.makeText(CameraActivity.this, "Bad response", Toast.LENGTH_SHORT).show();
-                                    if (mOnFinishedWeakReference.get() != null) mOnFinishedWeakReference.get().onFinished();
+                                    if (mOnFinishedWeakReference.get() != null)
+                                        mOnFinishedWeakReference.get().onFinished();
                                 }
                             });
-                            Log.d(TAG, "onResponse: "+response.code()+" "+response.message());
+                            Log.d(TAG, "onResponse: " + response.code() + " " + response.message());
                         }
                     }
                 });
@@ -250,7 +257,7 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         //note: use a runnable 250ish
         final Class c;
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.menu_create:
                 c = AddFaceActivity.class;
                 break;
