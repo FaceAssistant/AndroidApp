@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
@@ -16,6 +15,7 @@ import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,9 +25,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.List;
 
 import faceassist.faceassist.Components.Fragments.Picker.Models.BucketItem;
 import faceassist.faceassist.Components.Fragments.Picker.Models.GalleryItem;
@@ -39,14 +38,14 @@ import faceassist.faceassist.Utils.GridSpaceDecoration;
  * Created by QiFeng on 2/13/17.
  */
 
-public class PickerFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>,
-        PickerAdapter.GalleryItemSelected, AdapterView.OnItemSelectedListener {
+public class PickerFragment extends Fragment implements PickerAdapter.GalleryItemSelected,
+        AdapterView.OnItemSelectedListener, PickerContract.View {
 
     public static final String TAG = PickerFragment.class.getSimpleName();
 
-    public ArrayList<GalleryItem> mUnfilteredGalleryItems = new ArrayList<>();
-    public ArrayList<GalleryItem> mFiltedGalleryItems = new ArrayList<>();
-    public ArrayList<BucketItem> mBucketList = new ArrayList<>(); //list of directories
+    public List<GalleryItem> mUnfilteredGalleryItems = new ArrayList<>();
+    public List<GalleryItem> mFilteredGalleryItems = new ArrayList<>();
+    public List<BucketItem> mBucketList = new ArrayList<>(); //list of directories
 
     private View vProgress;
     private RecyclerView vRecyclerView;
@@ -56,9 +55,16 @@ public class PickerFragment extends Fragment implements LoaderManager.LoaderCall
 
     private Handler mHandler = new Handler();
 
-    private static final int LOADER_ID = 0;
 
-    final String[] mProjection = {
+    private AlertDialog mAlertDialog;
+    private ArrayAdapter mSpinnerAdapter;
+    private AppCompatSpinner vSpinner;
+
+    private PickerContract.Presenter mPickerPresenter;
+
+
+
+    private static final String[] mProjection = {
             MediaStore.Files.FileColumns._ID,
             MediaStore.Files.FileColumns.DATA,
             MediaStore.Files.FileColumns.MEDIA_TYPE,
@@ -66,10 +72,11 @@ public class PickerFragment extends Fragment implements LoaderManager.LoaderCall
             MediaStore.Images.ImageColumns.BUCKET_ID
     };
 
+    private static final String selection = MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+            + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
-    private AlertDialog mAlertDialog;
-    private ArrayAdapter mSpinnerAdapter;
-    private AppCompatSpinner vSpinner;
+    private static final Uri queryUri = MediaStore.Files.getContentUri("external");
+
 
     public PickerFragment() {
 
@@ -113,7 +120,6 @@ public class PickerFragment extends Fragment implements LoaderManager.LoaderCall
 
         mBucketList.add(new BucketItem("", "Gallery"));
         vSpinner = (AppCompatSpinner) toolbar.findViewById(R.id.spinner);
-        //vSpinner.getBackground().setColorFilter(ContextCompat.getColor(getContext(), R.color.pure_white), PorterDuff.Mode.SRC_ATOP);
         vSpinner.setOnItemSelectedListener(this);
         toolbar.findViewById(R.id.spinner_arrow).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -135,18 +141,22 @@ public class PickerFragment extends Fragment implements LoaderManager.LoaderCall
         vRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         vRecyclerView.addItemDecoration(new GridSpaceDecoration(3, 4, false)); //add space decoration
 
-        mPickerAdapter = new PickerAdapter(mFiltedGalleryItems);
+        mPickerAdapter = new PickerAdapter(mFilteredGalleryItems);
         mPickerAdapter.setRequestManager(Glide.with(this));
         mPickerAdapter.setGalleryItemSelected(this);
 
         vRecyclerView.setAdapter(mPickerAdapter);
 
-        getLoaderManager().initLoader(LOADER_ID, null, this);
+        if (mPickerPresenter == null) {
+            mPickerPresenter = new PickerPresenter(this, getLoader(), getLoaderManager());
+            mPickerPresenter.setUnfilteredGalleryItems(mUnfilteredGalleryItems);
+            mPickerPresenter.start();
+        }
 
         return rootView;
     }
 
-    private void showProgress(boolean show) {
+    public void showProgress(boolean show) {
         if (show) {
             vRecyclerView.setVisibility(View.INVISIBLE);
             vProgress.setVisibility(View.VISIBLE);
@@ -159,67 +169,13 @@ public class PickerFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-
-        showProgress(true);
-
-        if (id == LOADER_ID) {
-            String selection = MediaStore.Files.FileColumns.MEDIA_TYPE + "="
-                    + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
-
-            Uri queryUri = MediaStore.Files.getContentUri("external");
-
-            if (getContext() == null) return null;
-
-            return new CursorLoader(
-                    getContext(),
-                    queryUri,
-                    mProjection,
-                    selection,
-                    null, // Selection args (none).
-                    MediaStore.Files.FileColumns.DATE_ADDED + " DESC" // Sort order.
-            );
-        }
-
-        return null;
-    }
-
-    @Override
-    public void onLoadFinished(Loader loader, Cursor cursor) {
-        int pathIndex = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA);
-        int idIndex = cursor.getColumnIndex(MediaStore.Files.FileColumns._ID);
-        int mediaIndex = cursor.getColumnIndex(MediaStore.Files.FileColumns.MEDIA_TYPE);
-        int bucketName = cursor.getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME);
-        int bucketId = cursor.getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_ID);
-
-
-        final HashSet<BucketItem> bucketItems = new HashSet<>();
-
-        mUnfilteredGalleryItems.clear();
-
-        if (cursor.moveToFirst()) {
-            do {
-                String buckId = cursor.getString(bucketId);
-                File f = new File(cursor.getString(pathIndex));
-                if (!f.getPath().endsWith(".gif")) {
-                    mUnfilteredGalleryItems.add(
-                            new GalleryItem(
-                                    cursor.getString(idIndex),
-                                    Uri.fromFile(f),
-                                    cursor.getInt(mediaIndex),
-                                    buckId
-                            )
-                    );
-
-                    bucketItems.add(new BucketItem(buckId, cursor.getString(bucketName)));
-                }
-
-            } while (cursor.moveToNext());
-        }
-
+    public void updateBucketAndGallery(List<BucketItem> bucketItems, List<GalleryItem> galleryItems) {
         mBucketList.clear();
-        mBucketList.add(new BucketItem("", "Gallery")); //option for all images
         mBucketList.addAll(bucketItems);
+
+        mFilteredGalleryItems.clear();
+        mFilteredGalleryItems.addAll(galleryItems);
+
         mSpinnerAdapter.notifyDataSetChanged();
         if (vSpinner.getSelectedItemPosition() == 0) {
             onItemSelected(null, null, 0, 0);
@@ -227,15 +183,53 @@ public class PickerFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Override
-    public void onLoaderReset(Loader loader) {
+    public void showUpdatedGallery(final List<GalleryItem> galleryItems) {
+        mHandler.removeCallbacksAndMessages(null);
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mFilteredGalleryItems.clear();
+                mFilteredGalleryItems.addAll(galleryItems);
+                mPickerAdapter.notifyDataSetChanged();
+                showProgress(false);
+            }
+        });
     }
+
+    @Override
+    public void runClickedItem(GalleryItem item) {
+        if (mOnGalleryItemSelected != null) mOnGalleryItemSelected.onGalleryItemSelected(item);
+    }
+
+    @Override
+    public void showErrorToast(){
+        if (getContext() != null){
+            Toast.makeText(getContext(), "This file could not be opended", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private Loader<Cursor> getLoader(){
+        return new CursorLoader(
+                getContext(),
+                queryUri,
+                mProjection,
+                selection,
+                null, // Selection args (none).
+                MediaStore.Files.FileColumns.DATE_ADDED + " DESC" // Sort order.
+        );
+    }
+
 
 
     @Override
     public void onDestroyView() {
+        //Log.i(TAG, "onDestroyView: ");
         super.onDestroyView();
 
-        getLoaderManager().destroyLoader(LOADER_ID);
+        if (mPickerPresenter != null) {
+            mPickerPresenter.stop();
+            mPickerPresenter = null;
+        }
 
         if (mAlertDialog != null) {
             mAlertDialog.dismiss();
@@ -249,11 +243,7 @@ public class PickerFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void itemClicked(GalleryItem item) {
-        File file = new File(item.uri.getPath());
-        if (file.exists()) {
-            if (mOnGalleryItemSelected != null) mOnGalleryItemSelected.onGalleryItemSelected(item);
-        } else if (getContext() != null)
-            Toast.makeText(getContext(), "This file could not be opended", Toast.LENGTH_SHORT).show();
+        mPickerPresenter.clickGalleryItem(item);
     }
 
 
@@ -302,29 +292,7 @@ public class PickerFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         //Log.i(TAG, "onItemSelected: " + position);
-        showProgress(true);
-        String filter = mBucketList.get(position).id;
-        final ArrayList<GalleryItem> temp;
-
-        if (filter.isEmpty()) {
-            temp = mUnfilteredGalleryItems;
-        } else {
-            temp = new ArrayList<>();
-            for (GalleryItem item : mUnfilteredGalleryItems)
-                if (item.bucketId.equals(filter))
-                    temp.add(item);
-        }
-
-        mHandler.removeCallbacksAndMessages(null);
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                mFiltedGalleryItems.clear();
-                mFiltedGalleryItems.addAll(temp);
-                mPickerAdapter.notifyDataSetChanged();
-                showProgress(false);
-            }
-        });
+        mPickerPresenter.filter(mBucketList.get(position).id);
     }
 
     @Override

@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.RequestManager;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import faceassist.faceassist.Components.Fragments.Picker.Models.GalleryItem;
 import faceassist.faceassist.R;
@@ -19,12 +20,12 @@ import faceassist.faceassist.R;
 
 public class PickerAdapter extends RecyclerView.Adapter<PickerAdapter.GalleryViewHolder> {
 
-    private ArrayList<GalleryItem> mGalleryItems;
+    private List<GalleryItem> mGalleryItems;
     private GalleryItemSelected mGalleryItemSelected;
     private RequestManager mRequestManager;
 
 
-    public PickerAdapter(ArrayList<GalleryItem> items) {
+    public PickerAdapter(List<GalleryItem> items) {
         mGalleryItems = items;
     }
 

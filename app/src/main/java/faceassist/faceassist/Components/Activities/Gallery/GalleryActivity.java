@@ -117,7 +117,8 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
 
     @Override
     public void onCheckPermissionClicked() {
-        getReadPermission();
+        if (hasReadPermission()) addPickerFragment();
+        else getReadPermission();
     }
 
     @Override
