@@ -47,10 +47,10 @@ public class CameraPresenter implements CameraContract.Presenter {
 
     private CameraContract.View mCameraView;
     private BitmapSaver mBitmapSaver;
-    private RotationHelper mRotationHelper;
+    private OrientationHelper mRotationHelper;
 
 
-    CameraPresenter(CameraContract.View cameraView, BitmapSaver bitmapSaver, RotationHelper rotationHelper) {
+    CameraPresenter(CameraContract.View cameraView, BitmapSaver bitmapSaver, OrientationHelper rotationHelper) {
         mTakePictureHandler = new Handler(Looper.getMainLooper());
         mCameraView = cameraView;
         mBitmapSaver = bitmapSaver;
@@ -140,7 +140,7 @@ public class CameraPresenter implements CameraContract.Presenter {
     @Override
     public void start(CameraTextureView textureView, SurfaceTexture surfaceHolder) {
         setupCamera();
-        mCamera.setDisplayOrientation(mRotationHelper.getRotation());
+        mCamera.setDisplayOrientation(mRotationHelper.getOrientation());
 
         try {
             mCamera.setPreviewTexture(surfaceHolder);
@@ -324,8 +324,8 @@ public class CameraPresenter implements CameraContract.Presenter {
         File saveBitmapToCache(Bitmap bitmap);
     }
 
-    public interface RotationHelper{
-        int getRotation();
+    public interface OrientationHelper {
+        int getOrientation();
     }
 
 }

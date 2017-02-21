@@ -194,13 +194,5 @@ public class CameraTextureView extends TextureView {
     }
 
 
-//    @Override
-//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//        int height = MeasureSpec.getSize(heightMeasureSpec);
-//        int width = MeasureSpec.getSize(widthMeasureSpec);
-//        setMeasuredDimension(width, height);
-//    }
-
-
 }
 

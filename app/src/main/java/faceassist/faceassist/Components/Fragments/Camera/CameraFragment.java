@@ -2,7 +2,6 @@ package faceassist.faceassist.Components.Fragments.Camera;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -13,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
@@ -22,28 +20,19 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
 
 import faceassist.faceassist.R;
+import faceassist.faceassist.Utils.CameraUtils;
 import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.OnToolbarMenuIconPressed;
 import faceassist.faceassist.Utils.PermissionUtils;
-import rx.Observable;
-import rx.Subscriber;
-import rx.Subscription;
-import rx.functions.Action1;
-
-import static rx.android.schedulers.AndroidSchedulers.mainThread;
-import static rx.schedulers.Schedulers.io;
 
 /**
  * Created by QiFeng on 1/30/17.
  */
 
-public class CameraFragment extends Fragment implements TextureView.SurfaceTextureListener, CameraPresenter.RotationHelper,
-        CameraContract.View, CameraPresenter.BitmapSaver {
+public class CameraFragment extends Fragment implements TextureView.SurfaceTextureListener, CameraPresenter.OrientationHelper,
+        CameraContract.View, CameraPresenter.BitmapSaver{
 
     public static final String TAG = CameraFragment.class.getSimpleName();
 
@@ -191,69 +180,17 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
 
 
     @Override
-    public int getRotation() {
+    public int getOrientation() {
         int cameraId = getCameraId();
-        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        Camera.getCameraInfo(cameraId, cameraInfo);
-
-        // Clockwise rotation needed to align the window display to the natural position
-        int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
-        int degrees = 0;
-
-        switch (rotation) {
-            case Surface.ROTATION_0: {
-                degrees = 0;
-                break;
-            }
-            case Surface.ROTATION_90: {
-                degrees = 90;
-                break;
-            }
-            case Surface.ROTATION_180: {
-                degrees = 180;
-                break;
-            }
-            case Surface.ROTATION_270: {
-                degrees = 270;
-                break;
-            }
-        }
-
-        // CameraInfo.Orientation is the angle relative to the natural position of the device
-        // in clockwise rotation (angle that is rotated clockwise from the natural position)
-        /*
-      Determine the current display orientation and rotate the camera preview
-      accordingly
-     */
-        int displayOrientation;
-        if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            // Orientation is angle of rotation when facing the camera for
-            // the camera image to match the natural orientation of the device
-            displayOrientation = (cameraInfo.orientation + degrees) % 360;
-            displayOrientation = (360 - displayOrientation) % 360;
-        } else {
-            displayOrientation = (cameraInfo.orientation - degrees + 360) % 360;
-        }
-
-        return displayOrientation;
+        return CameraUtils.getOrientation(cameraId, getActivity());
     }
 
 
     private int getCameraId(){
-        return mReverseCheckbox.isChecked() ? getFrontCameraID() : getBackCameraID();
-    }
-    private int getBackCameraID() {
-        return Camera.CameraInfo.CAMERA_FACING_BACK;
+        return mReverseCheckbox.isChecked() ?
+                CameraUtils.getFrontCameraID(getContext()) : CameraUtils.getBackCameraID();
     }
 
-    private int getFrontCameraID() {
-        PackageManager pm = getActivity().getPackageManager();
-        if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)) {
-            return Camera.CameraInfo.CAMERA_FACING_FRONT;
-        }
-
-        return getBackCameraID();
-    }
 
     @Override
     public void onImageTaken(Uri image) {
