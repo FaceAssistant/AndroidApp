@@ -109,14 +109,13 @@ public class ImageUtils {
 
 
     public static Bitmap decodeUri(Context c, Uri uri, final int requiredSize)
-            throws IOException, NullPointerException{
+            throws IOException{
 
         BitmapFactory.Options o = new BitmapFactory.Options();
         o.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(c.getContentResolver().openInputStream(uri), null, o);
 
-        int width_tmp = o.outWidth
-                , height_tmp = o.outHeight;
+        int width_tmp = o.outWidth, height_tmp = o.outHeight;
         int scale = 1;
 
         while(true) {
@@ -130,31 +129,8 @@ public class ImageUtils {
         BitmapFactory.Options o2 = new BitmapFactory.Options();
         o2.inSampleSize = scale;
 
-        Rect rect = new Rect();
-        if (o.outWidth > o.outHeight){
-            int half = (o.outWidth - o.outHeight) / 2;
-            rect.top = 0;
-            rect.bottom = o.outHeight;
-            rect.left = half;
-            rect.right = half + o.outHeight;
-        }else if(o.outHeight > o.outWidth){
-            int half = (o.outHeight - o.outWidth) / 2;
-            rect.top = half;
-            rect.bottom = half + o.outWidth;
-            rect.left = 0;
-            rect.right = o.outWidth;
-        }else {
-            rect.left = 0;
-            rect.top = 0;
-            rect.right = o.outWidth;
-            rect.bottom = o.outHeight;
-        }
+        //return cropped;
 
-        BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(c.getContentResolver().openInputStream(uri), true);
-        Bitmap cropped = decoder.decodeRegion(rect, o2);
-        decoder.recycle();
-        return cropped;
-
-        //return BitmapFactory.decodeStream(c.getContentResolver().openInputStream(uri), null, o2);
+        return BitmapFactory.decodeStream(c.getContentResolver().openInputStream(uri), null, o2);
     }
 }

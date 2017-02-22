@@ -17,12 +17,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
 
 import java.io.IOException;
+import java.util.Locale;
 
 import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.CustomFace;
 import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.FaceDetectionImageView;
@@ -60,7 +62,6 @@ public class FacialRecFragment extends Fragment implements OnFinished {
     private Subscription mCropSubscription;
 
     private Toolbar vToolbar;
-    private Bitmap mImageBitmap;
 
     private FaceDetectionImageView vImageView;
 
@@ -132,41 +133,67 @@ public class FacialRecFragment extends Fragment implements OnFinished {
             mImageUri = getArguments().getParcelable(IMAGE_URI);
 
         if (mImageUri != null) {
-
-            mFacialRecSubscription = Observable.just(loadImages(mImageUri))
-                    .subscribeOn(io())
-                    .observeOn(mainThread())
-                    .subscribe(new Action1<Bitmap>() {
-                        @Override
-                        public void call(final Bitmap bitmap) {
-                            if (bitmap != null) {
-                                vImageView.setBitmap(bitmap);
-                                vImageView.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        runFacialRec(bitmap);
-                                    }
-                                });
-                            }
-                        }
-                    });
+            vImageView.post(new Runnable() {
+                @Override
+                public void run() {
+                    loadImage(mImageUri);
+                }
+            });
         }
     }
 
-    private Bitmap loadImages(Uri image){
+    private void loadImage(Uri uri){
+        mFacialRecSubscription = Observable.just(getImageBitmap(uri))
+                .subscribeOn(newThread())
+                .observeOn(mainThread())
+                .subscribe(new Action1<Bitmap>() {
+                    @Override
+                    public void call(final Bitmap bitmap) {
+                        if (bitmap != null) {
+                            vImageView.setBitmap(bitmap);
+//                                vImageView.post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        runFacialRec(bitmap);
+//                                    }
+//                                });
+                        }
+                    }
+                });
+    }
+
+    private Bitmap getImageBitmap(Uri image) {
         int height = Resources.getSystem().getDisplayMetrics().heightPixels;
         int width = Resources.getSystem().getDisplayMetrics().widthPixels;
         int reqSize = height > width ? width : height;
 
         try {
-            Bitmap cropped = ImageUtils.decodeUri(getContext(), image, reqSize);
-            Log.i(TAG, "loadImages:cropped "+cropped.getHeight());
-            if (cropped.getHeight() == reqSize) return cropped;
+            Bitmap bitmap = ImageUtils.decodeUri(getContext(), image, reqSize);
 
+            boolean heightShorter = bitmap.getWidth() > bitmap.getHeight();
 
-            Bitmap scaled = Bitmap.createScaledBitmap(cropped, reqSize, reqSize, true);
-            Log.i(TAG, "loadImages: scaled "+scaled.getHeight());
-            if (scaled != cropped) cropped.recycle();
+            int shorter, longer;
+            if (heightShorter){
+                shorter = bitmap.getHeight();
+                longer = bitmap.getWidth();
+            }else {
+                shorter = bitmap.getWidth();
+                longer = bitmap.getHeight();
+            }
+
+            //check if need to scale
+            Log.i(TAG, "loadImages:smaller side " + shorter);
+            if (shorter == reqSize) return bitmap;
+
+            int reqLonger = reqSize * longer / shorter;
+
+            Bitmap scaled = heightShorter ?
+                    Bitmap.createScaledBitmap(bitmap, reqLonger, reqSize, true) :
+                    Bitmap.createScaledBitmap(bitmap, reqSize, reqLonger, true);
+
+            Log.i(TAG, String.format(Locale.ENGLISH, "loadImages:scaled w-%d h-%d", scaled.getWidth(), scaled.getHeight()));
+
+            if (scaled != bitmap) bitmap.recycle();
             return scaled;
 
         } catch (IOException e) {
@@ -179,33 +206,7 @@ public class FacialRecFragment extends Fragment implements OnFinished {
 
 
     private void runFacialRec(Bitmap bitmap) {
-
-        if (mImageBitmap != null && mImageBitmap != bitmap)
-            mImageBitmap.recycle();
-
-        mImageBitmap = bitmap;
-
-        mFacialRecSubscription = Observable.just(detectFaces(bitmap))
-                .subscribeOn(newThread())
-                .observeOn(mainThread())
-                .subscribe(new Action1<SparseArray<Face>>() {
-                    @Override
-                    public void call(SparseArray<Face> faceSparseArray) {
-                        if (getContext() == null || faceSparseArray == null) return;
-                        for (int i = 0; i < faceSparseArray.size(); i++) {
-
-                            CustomFace face = new CustomFace(faceSparseArray.valueAt(i),
-                                    mImageBitmap.getWidth(), mImageBitmap.getHeight());
-
-                            Log.d(TAG, face.toString());
-
-                            vImageView.addFace(face);
-                        }
-
-                        vToolbar.setTitle("Select a face");
-                    }
-                });
-
+        vToolbar.setTitle("Select a face");
     }
 
     private SparseArray<Face> detectFaces(Bitmap bitmap) {
@@ -270,16 +271,16 @@ public class FacialRecFragment extends Fragment implements OnFinished {
     }
 
     private Bitmap cropImage() {
-        if (mImageBitmap != null) {
+        Bitmap cachedBitmap = vImageView.getCachedBitmap();
+        if (cachedBitmap != null) {
             CustomFace face = vImageView.getSelectedFace().getFace();
 
-            Bitmap bitmap = Bitmap.createBitmap(mImageBitmap, face.x, face.y, face.getWidth(), face.getHeight());
+            Bitmap bitmap = Bitmap.createBitmap(cachedBitmap, face.x, face.y, face.getWidth(), face.getHeight());
 
             //NOTE: test code
             ImageUtils.savePicture(getContext(), bitmap);
 
             return bitmap; //ImageUtils.encodeImageBase64(bitmap);
-
         }
 
         return null;
