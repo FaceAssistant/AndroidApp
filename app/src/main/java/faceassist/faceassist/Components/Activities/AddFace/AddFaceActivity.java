@@ -130,7 +130,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-
+                                                    finish();
                                                 }
                                             });
                                         }else {
