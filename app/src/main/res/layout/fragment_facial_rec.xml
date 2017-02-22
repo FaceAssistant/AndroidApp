@@ -17,20 +17,12 @@
         app:titleTextColor="@color/pureWhite"
     />
 
-    <faceassist.faceassist.Utils.Views.SquareFrameLayout
-        android:id="@+id/image_parent"
+    <faceassist.faceassist.Components.Fragments.FacialRec.ImageView.FaceDetectionImageView
+        android:id="@+id/image_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/colorPrimaryDark"
-    >
-
-        <ImageView
-            android:id="@+id/image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
-
-    </faceassist.faceassist.Utils.Views.SquareFrameLayout>
+    />
 
     <FrameLayout
         android:layout_width="match_parent"

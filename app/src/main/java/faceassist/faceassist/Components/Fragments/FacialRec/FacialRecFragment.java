@@ -10,28 +10,22 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import faceassist.faceassist.Components.Fragments.FacialRec.SquareFaceView.OnFaceSelected;
+import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.CustomFace;
+import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.FaceDetectionImageView;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.OnFinished;
@@ -47,7 +41,7 @@ import static rx.schedulers.Schedulers.newThread;
  * Created by QiFeng on 1/31/17.
  */
 
-public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFinished {
+public class FacialRecFragment extends Fragment implements OnFinished {
 
     public static final String TAG = FacialRecFragment.class.getSimpleName();
 
@@ -57,7 +51,6 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
 
     private View vProgressBar;
     private View vConfirmButton;
-    private ImageView vImageView;
 
     private FaceDetector mFaceDetector;
 
@@ -66,11 +59,10 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
     private Subscription mFacialRecSubscription;
     private Subscription mCropSubscription;
 
-    private FrameLayout vImageParent;
     private Toolbar vToolbar;
-
-    private SquareFaceView mSelectedFace;
     private Bitmap mImageBitmap;
+
+    private FaceDetectionImageView vImageView;
 
 
     public static FacialRecFragment newInstance(Uri imageUri) {
@@ -108,10 +100,9 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_facial_rec, container, false);
 
-        vImageParent = (FrameLayout) root.findViewById(R.id.image_parent);
         vProgressBar = root.findViewById(R.id.progressbar);
         vConfirmButton = root.findViewById(R.id.confirm_button);
-        vImageView = (ImageView) root.findViewById(R.id.image);
+        vImageView = (FaceDetectionImageView) root.findViewById(R.id.image_view);
 
         vToolbar = (Toolbar) root.findViewById(R.id.toolbar);
         vToolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -140,9 +131,6 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
         if (getArguments() != null)
             mImageUri = getArguments().getParcelable(IMAGE_URI);
 
-
-        mSelectedFace = null;
-
         if (mImageUri != null) {
 
             mFacialRecSubscription = Observable.just(loadImages(mImageUri))
@@ -152,7 +140,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
                         @Override
                         public void call(final Bitmap bitmap) {
                             if (bitmap != null) {
-                                vImageView.setImageBitmap(bitmap);
+                                vImageView.setBitmap(bitmap);
                                 vImageView.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -211,10 +199,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
 
                             Log.d(TAG, face.toString());
 
-                            SquareFaceView v = new SquareFaceView(getContext(), face);
-                            vImageParent.addView(v);
-                            v.updatePosition();
-                            v.setOnFaceSelected(FacialRecFragment.this);
+                            vImageView.addFace(face);
                         }
 
                         vToolbar.setTitle("Select a face");
@@ -262,7 +247,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
 
     private void onConfirmClick() {
         if (getContext() == null) return;
-        if (mSelectedFace == null) {
+        if (vImageView.getSelectedFace() == null) {
             Toast.makeText(getContext(), "Please select a face", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -276,6 +261,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
                     public void call(Bitmap bitmap) {
                         if (bitmap != null && mOnConfirmFace != null) {
                             mOnConfirmFace.onConfirmFace(bitmap, FacialRecFragment.this);
+                            //Log.i(TAG, "call: cropped");
                         } else {
                             onFinished();
                         }
@@ -285,12 +271,12 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
 
     private Bitmap cropImage() {
         if (mImageBitmap != null) {
-            CustomFace face = mSelectedFace.getFace();
+            CustomFace face = vImageView.getSelectedFace().getFace();
 
             Bitmap bitmap = Bitmap.createBitmap(mImageBitmap, face.x, face.y, face.getWidth(), face.getHeight());
 
             //NOTE: test code
-            //ImageUtils.savePicture(getContext(), bitmap);
+            ImageUtils.savePicture(getContext(), bitmap);
 
             return bitmap; //ImageUtils.encodeImageBase64(bitmap);
 
@@ -301,18 +287,6 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
 
 
     @Override
-    public void onFaceSelected(SquareFaceView v) {
-        if (mSelectedFace != null) {
-            mSelectedFace.setSelected(false);
-            mSelectedFace.invalidate();
-        }
-
-        mSelectedFace = v;
-        mSelectedFace.setSelected(true);
-        mSelectedFace.invalidate();
-    }
-
-    @Override
     public void onFinished() {
         showProgress(false);
     }
@@ -320,6 +294,7 @@ public class FacialRecFragment extends Fragment implements OnFaceSelected, OnFin
     public interface OnConfirmFace {
         void onConfirmFace(Bitmap bitmap, OnFinished onFinished);
 
+        //called when this fragment is destroyed
         //stop actions if FacialRecFragment is destroyed
         void onStopSearch();
     }
