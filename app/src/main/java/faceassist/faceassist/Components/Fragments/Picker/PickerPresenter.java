@@ -98,7 +98,7 @@ public class PickerPresenter implements PickerContract.Presenter, LoaderManager.
             do {
                 String buckId = cursor.getString(bucketId);
                 File f = new File(cursor.getString(pathIndex));
-                if (!f.getPath().endsWith(".gif")) {
+                //if (!f.getPath().endsWith(".gif")) {
                     galleryItems.add(
                             new GalleryItem(
                                     cursor.getString(idIndex),
@@ -109,7 +109,7 @@ public class PickerPresenter implements PickerContract.Presenter, LoaderManager.
                     );
 
                     bucketItems.add(new BucketItem(buckId, cursor.getString(bucketName)));
-                }
+                //}
 
             } while (cursor.moveToNext());
         }

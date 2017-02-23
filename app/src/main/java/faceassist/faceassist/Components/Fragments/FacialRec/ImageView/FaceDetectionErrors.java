@@ -5,6 +5,8 @@ package faceassist.faceassist.Components.Fragments.FacialRec.ImageView;
  */
 
 public class FaceDetectionErrors {
-    public final static int NO_LIBRARY = 0;
+    
+    public final static int ERROR_NO_LIBRARY = 0;
     public final static int ERROR_GETTING_FACES = 1;
+    public final static int ERROR_DECODING_IMAGE = 2;
 }

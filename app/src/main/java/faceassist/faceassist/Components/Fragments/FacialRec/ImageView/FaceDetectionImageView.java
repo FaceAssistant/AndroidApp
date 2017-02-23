@@ -1,9 +1,11 @@
 package faceassist.faceassist.Components.Fragments.FacialRec.ImageView;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
@@ -15,6 +17,10 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
+import java.io.IOException;
+import java.util.Locale;
+
+import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.Views.SquareFrameLayout;
 import rx.Observable;
 import rx.Observer;
@@ -32,7 +38,6 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
 
     private static final String TAG = FaceDetectionImageView.class.getSimpleName();
     private ImageView vImageView;
-    //private List<CustomFace> mCustomFaces = new ArrayList<>();
     private FaceView vSelectedFace;
 
     private FaceDetector mFaceDetector;
@@ -72,52 +77,139 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
         addView(vImageView);
     }
 
-    public ImageView getvImageView(){
-        return vImageView;
+
+    public void setImageUri(final Uri imageUri){
+        post(new Runnable() {
+            @Override
+            public void run() {
+                if (mFacialRecSubscription != null) mFacialRecSubscription.unsubscribe();
+
+                mFacialRecSubscription = Observable.just(decodeUri(imageUri))
+                        .subscribeOn(io())
+                        .observeOn(mainThread())
+                        .subscribe(new Observer<Bitmap>() {
+                            @Override
+                            public void onCompleted() {}
+
+                            @Override
+                            public void onError(Throwable e) {
+                                e.printStackTrace();
+                            }
+
+                            @Override
+                            public void onNext(Bitmap bitmap) {
+                                if (bitmap != null) {
+                                    Log.i(TAG, "onNext: ");
+                                    setBitmap(bitmap);
+                                    updateFaces();
+                                }else mFaceDetectionListener.onFailed(FaceDetectionErrors.ERROR_DECODING_IMAGE);
+                            }
+                        });
+            }
+        });
+    }
+
+    private Bitmap decodeUri(Uri image) {
+        int height = Resources.getSystem().getDisplayMetrics().heightPixels;
+        int width = Resources.getSystem().getDisplayMetrics().widthPixels;
+        int reqSize = height > width ? width : height;
+
+        try {
+            Bitmap bitmap = ImageUtils.decodeUri(getContext(), image, reqSize);
+
+            boolean heightShorter = bitmap.getWidth() > bitmap.getHeight();
+
+            int shorter, longer;
+            if (heightShorter) {
+                shorter = bitmap.getHeight();
+                longer = bitmap.getWidth();
+            } else {
+                shorter = bitmap.getWidth();
+                longer = bitmap.getHeight();
+            }
+
+            //check if need to scale
+            Log.i(TAG, "loadImages:smaller side " + shorter);
+            if (shorter == reqSize) return bitmap;
+
+            int reqLonger = reqSize * longer / shorter;
+
+            Bitmap scaled = heightShorter ?
+                    Bitmap.createScaledBitmap(bitmap, reqLonger, reqSize, true) :
+                    Bitmap.createScaledBitmap(bitmap, reqSize, reqLonger, true);
+
+            Log.i(TAG, String.format(Locale.ENGLISH, "loadImages:scaled w-%d h-%d", scaled.getWidth(), scaled.getHeight()));
+
+            if (scaled != bitmap) bitmap.recycle();
+            return scaled;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
-    public void setBitmap(Bitmap bitmap) { //add runnable ?
-        Matrix matrix = getMatrix();
+    private void setBitmap(Bitmap bitmap) { //add runnable ?
+        if (bitmap != null) {
+            clearFaceViews();
 
-        matrix.postTranslate((vImageView.getWidth() - bitmap.getWidth()) / 2f,
-                (vImageView.getHeight() - bitmap.getHeight()) / 2f);
+            Matrix matrix = new Matrix();
 
-        vImageView.setImageMatrix(matrix);
+            float iw = vImageView.getWidth();
+            float ih = vImageView.getHeight();
+            float bw = bitmap.getWidth();
+            float bh = bitmap.getHeight();
 
-        vImageView.setImageBitmap(bitmap);
+            matrix.postTranslate((iw - bw) / 2, (ih - bh) / 2);
+            vImageView.setImageMatrix(matrix);
+            vImageView.setImageBitmap(bitmap);
+
+//            if (bitmap != mBitmap) {
+//                if (mBitmap != null && !mBitmap.isRecycled()) mBitmap.recycle();
+//                mBitmap = bitmap;
+//            }
+        }
     }
 
     public void updateFaces() {
-        clearFaceViews();
-        if (mFacialRecSubscription != null) mFacialRecSubscription.unsubscribe();
+        vImageView.post(new Runnable() {
+            @Override
+            public void run() {
+                clearFaceViews();
+                if (mFacialRecSubscription != null) mFacialRecSubscription.unsubscribe();
 
-        mFacialRecSubscription = Observable.just(getFaces())
-                .subscribeOn(io())
-                .observeOn(mainThread())
-                .subscribe(new Observer<SparseArray<Face>>() {
-                    @Override
-                    public void onCompleted() {
-                    }
+                mFaceDetectionListener.onStartFacialRec();
 
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                        mFaceDetectionListener.onFailed(FaceDetectionErrors.ERROR_GETTING_FACES);
-                    }
+                mFacialRecSubscription = Observable.just(getFaces())
+                        .subscribeOn(io())
+                        .observeOn(mainThread())
+                        .subscribe(new Observer<SparseArray<Face>>() {
+                            @Override
+                            public void onCompleted() {
+                                mFaceDetectionListener.onCompleteFacialRec();
+                            }
 
-                    @Override
-                    public void onNext(SparseArray<Face> faceSparseArray) {
-                        if (getContext() == null || faceSparseArray == null) return;
-                        for (int i = 0; i < faceSparseArray.size(); i++) {
-                            CustomFace face = new CustomFace(faceSparseArray.valueAt(i),
-                                    getWidth(), getHeight());
+                            @Override
+                            public void onError(Throwable e) {
+                                e.printStackTrace();
+                                mFaceDetectionListener.onFailed(FaceDetectionErrors.ERROR_GETTING_FACES);
+                            }
 
-                            Log.d(TAG, face.toString());
-                            addFace(face);
-                        }
-                    }
-                });
+                            @Override
+                            public void onNext(SparseArray<Face> faceSparseArray) {
+                                if (getContext() == null || faceSparseArray == null) return;
+                                for (int i = 0; i < faceSparseArray.size(); i++) {
+                                    CustomFace face = new CustomFace(faceSparseArray.valueAt(i),
+                                            getWidth(), getHeight());
+
+                                    Log.d(TAG, face.toString());
+                                    addFace(face);
+                                }
+                            }
+                        });
+            }
+        });
     }
 
     public FaceView getSelectedFace() {
@@ -130,12 +222,10 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
 
         if (getChildCount() > 1) {
             removeViews(1, getChildCount() - 1);
-            //mCustomFaces.clear();
         }
     }
 
     public void addFace(CustomFace face) {
-        //mCustomFaces.add(face);
         FaceView faceView = new FaceView(getContext(), face);
         faceView.setOnFaceSelected(this);
         addView(faceView);
@@ -144,13 +234,15 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
     }
 
     public Bitmap getBitmap() {
-        Bitmap returnedBitmap = Bitmap.createBitmap(vImageView.getWidth(), vImageView.getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap returnedBitmap = Bitmap.createBitmap(vImageView.getWidth(),
+                vImageView.getHeight(), Bitmap.Config.ARGB_8888);
+
         Canvas c = new Canvas(returnedBitmap);
         vImageView.draw(c);
         return returnedBitmap;
     }
 
-    public Bitmap getCachedBitmap(){
+    public Bitmap getCachedBitmap() {
         return mBitmap;
     }
 
@@ -159,12 +251,11 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
         if (faceDetector == null) return null;
 
         Bitmap image = getBitmap();
-        if (mBitmap != null && mBitmap != image)
+        if (mBitmap != null && mBitmap != image && !mBitmap.isRecycled())
             mBitmap.recycle();
 
         mBitmap = image;
-
-        final Frame frame = new Frame.Builder().setBitmap(mBitmap).build();
+        final Frame frame = new Frame.Builder().setBitmap(image).build();
         return mFaceDetector.detect(frame);
     }
 
@@ -177,7 +268,7 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
         }
 
         if (!mFaceDetector.isOperational()) {
-            mFaceDetectionListener.onFailed(FaceDetectionErrors.NO_LIBRARY);
+            mFaceDetectionListener.onFailed(FaceDetectionErrors.ERROR_NO_LIBRARY);
             return null;
         }
 
@@ -185,7 +276,7 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
 
     }
 
-    public void setFaceDetectionListener(FaceDetectionListener faceDetectionListener){
+    public void setFaceDetectionListener(FaceDetectionListener faceDetectionListener) {
         mFaceDetectionListener = faceDetectionListener;
     }
 
@@ -193,6 +284,11 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
     public void stopProcesses() {
         if (mFacialRecSubscription != null)
             mFacialRecSubscription.unsubscribe();
+
+        if (mFaceDetector != null) {
+            mFaceDetector.release();
+            mFaceDetector = null;
+        }
     }
 
 
@@ -200,6 +296,11 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         stopProcesses();
+
+        if (mBitmap != null && !mBitmap.isRecycled()){
+            mBitmap.recycle();
+            mBitmap = null;
+        }
     }
 
     @Override
@@ -215,11 +316,11 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
     }
 
     public interface FaceDetectionListener {
-        void onStart();
-
-        void onComplete();
-
+        void onStartFacialRec();
+        void onCompleteFacialRec();
         void onFailed(int error);
     }
+
+
 }
 

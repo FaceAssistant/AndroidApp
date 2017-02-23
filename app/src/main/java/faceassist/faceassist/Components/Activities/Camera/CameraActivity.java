@@ -42,7 +42,7 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 public class CameraActivity extends AppCompatActivity implements CameraFragment.OnImageTaken,
-        NeedPermissionFragment.OnCheckPermissionClicked, FacialRecFragment.OnConfirmFace,
+        NeedPermissionFragment.OnCheckPermissionClicked, FacialRecFragment.OnFaceResult,
         NavigationView.OnNavigationItemSelectedListener, OnToolbarMenuIconPressed {
 
     public static final String TAG = CameraActivity.class.getSimpleName();
@@ -164,11 +164,11 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
 
     //when a face is selected
     @Override
-    public void onConfirmFace(Bitmap bitmap, OnFinished onFinished) {
+    public void onFaceResult(Bitmap bitmap, OnFinished onFinished) {
 
         //turn this into MVP later
 
-        //Log.i(TAG, "onConfirmFace: "+bitmap);
+        //Log.i(TAG, "onFaceResult: "+bitmap);
 
         //// TODO: 2/13/17 ASYNC
         HashMap<String, Object> params = new HashMap<>();
@@ -246,7 +246,7 @@ public class CameraActivity extends AppCompatActivity implements CameraFragment.
 
 
     @Override
-    public void onStopSearch() {
+    public void onSearchStopped() {
         if (mFacialSearch != null) mFacialSearch.cancel();
         mFacialSearch = null;
     }

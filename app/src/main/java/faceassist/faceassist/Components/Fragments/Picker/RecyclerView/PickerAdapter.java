@@ -8,7 +8,6 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.RequestManager;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import faceassist.faceassist.Components.Fragments.Picker.Models.GalleryItem;
@@ -73,7 +72,8 @@ public class PickerAdapter extends RecyclerView.Adapter<PickerAdapter.GalleryVie
             mGalleryItem = item;
 
             mRequestManager.load(item.uri)
-                    .thumbnail(0.5f)
+                    .asBitmap()
+                    .thumbnail(0.25f)
                     .into(vImageView);
 
         }

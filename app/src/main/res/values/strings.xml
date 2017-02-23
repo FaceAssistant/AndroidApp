@@ -13,6 +13,8 @@
     <string name="gallery_perm_title">Access images on your phone</string>
     <string name="gallery_perm_text">FaceAssist needs permission to access images on your phone.</string>
 
+    <string name="no_lib_title">Libraries not ready</string>
+    <string name="no_lib_text">The libraries needed for this application are not ready yet. Please try again later.</string>
 
     <!-- drawer menu strings -->
     <string name="menu_title_create">Add face</string>

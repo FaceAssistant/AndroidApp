@@ -29,7 +29,7 @@ import static rx.android.schedulers.AndroidSchedulers.mainThread;
 import static rx.schedulers.Schedulers.io;
 
 public class GalleryActivity extends AppCompatActivity implements NeedPermissionFragment.OnCheckPermissionClicked,
-        PickerFragment.OnGalleryItemSelected, FacialRecFragment.OnConfirmFace {
+        PickerFragment.OnGalleryItemSelected, FacialRecFragment.OnFaceResult {
 
     public static final String TAG = GalleryActivity.class.getSimpleName();
 
@@ -130,7 +130,7 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
     }
 
     @Override
-    public void onConfirmFace(Bitmap bitmap, OnFinished onFinished) {
+    public void onFaceResult(Bitmap bitmap, OnFinished onFinished) {
 
         final WeakReference<OnFinished> mOnFinishedWeakReference = new WeakReference<>(onFinished);
 
@@ -175,7 +175,7 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
     }
 
     @Override
-    public void onStopSearch() {
+    public void onSearchStopped() {
 
     }
 }

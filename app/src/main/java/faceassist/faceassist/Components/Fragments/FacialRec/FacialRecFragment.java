@@ -1,69 +1,46 @@
 package faceassist.faceassist.Components.Fragments.FacialRec;
 
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.google.android.gms.vision.Frame;
-import com.google.android.gms.vision.face.Face;
-import com.google.android.gms.vision.face.FaceDetector;
-
-
-import java.io.IOException;
-import java.util.Locale;
-
-import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.CustomFace;
 import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.FaceDetectionImageView;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.OnFinished;
-import rx.Observable;
-import rx.Subscription;
-import rx.functions.Action1;
 
-import static rx.android.schedulers.AndroidSchedulers.mainThread;
-import static rx.schedulers.Schedulers.io;
-import static rx.schedulers.Schedulers.newThread;
 
 /**
  * Created by QiFeng on 1/31/17.
  */
 
-public class FacialRecFragment extends Fragment implements OnFinished {
+public class FacialRecFragment extends Fragment implements OnFinished, FacialRecContract.View {
 
     public static final String TAG = FacialRecFragment.class.getSimpleName();
 
-    private OnConfirmFace mOnConfirmFace;
+    private OnFaceResult mOnFaceResult;
 
     private static final String IMAGE_URI = "image_uri";
 
     private View vProgressBar;
     private View vConfirmButton;
 
-    private FaceDetector mFaceDetector;
-
     private Uri mImageUri;
-
-    private Subscription mFacialRecSubscription;
-    private Subscription mCropSubscription;
 
     private Toolbar vToolbar;
 
     private FaceDetectionImageView vImageView;
+    private FacialRecContract.Presenter mFacialRecPresenter;
 
 
     public static FacialRecFragment newInstance(Uri imageUri) {
@@ -85,7 +62,7 @@ public class FacialRecFragment extends Fragment implements OnFinished {
         super.onAttach(context);
 
         try {
-            mOnConfirmFace = (OnConfirmFace) context;
+            mOnFaceResult = (OnFaceResult) context;
         } catch (ClassCastException e) {
             e.printStackTrace();
         }
@@ -105,6 +82,9 @@ public class FacialRecFragment extends Fragment implements OnFinished {
         vConfirmButton = root.findViewById(R.id.confirm_button);
         vImageView = (FaceDetectionImageView) root.findViewById(R.id.image_view);
 
+        mFacialRecPresenter = new FacialRecPresenter(this);
+        vImageView.setFaceDetectionListener(mFacialRecPresenter);
+
         vToolbar = (Toolbar) root.findViewById(R.id.toolbar);
         vToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,7 +97,7 @@ public class FacialRecFragment extends Fragment implements OnFinished {
         vConfirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onConfirmClick();
+                mFacialRecPresenter.clickedSubmit(vImageView);
             }
         });
 
@@ -133,110 +113,13 @@ public class FacialRecFragment extends Fragment implements OnFinished {
             mImageUri = getArguments().getParcelable(IMAGE_URI);
 
         if (mImageUri != null) {
-            vImageView.post(new Runnable() {
-                @Override
-                public void run() {
-                    loadImage(mImageUri);
-                }
-            });
+            vImageView.setImageUri(mImageUri);
         }
     }
 
-    private void loadImage(Uri uri){
-        mFacialRecSubscription = Observable.just(getImageBitmap(uri))
-                .subscribeOn(newThread())
-                .observeOn(mainThread())
-                .subscribe(new Action1<Bitmap>() {
-                    @Override
-                    public void call(final Bitmap bitmap) {
-                        if (bitmap != null) {
-                            vImageView.setBitmap(bitmap);
-//                                vImageView.post(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        runFacialRec(bitmap);
-//                                    }
-//                                });
-                        }
-                    }
-                });
-    }
 
-    private Bitmap getImageBitmap(Uri image) {
-        int height = Resources.getSystem().getDisplayMetrics().heightPixels;
-        int width = Resources.getSystem().getDisplayMetrics().widthPixels;
-        int reqSize = height > width ? width : height;
-
-        try {
-            Bitmap bitmap = ImageUtils.decodeUri(getContext(), image, reqSize);
-
-            boolean heightShorter = bitmap.getWidth() > bitmap.getHeight();
-
-            int shorter, longer;
-            if (heightShorter){
-                shorter = bitmap.getHeight();
-                longer = bitmap.getWidth();
-            }else {
-                shorter = bitmap.getWidth();
-                longer = bitmap.getHeight();
-            }
-
-            //check if need to scale
-            Log.i(TAG, "loadImages:smaller side " + shorter);
-            if (shorter == reqSize) return bitmap;
-
-            int reqLonger = reqSize * longer / shorter;
-
-            Bitmap scaled = heightShorter ?
-                    Bitmap.createScaledBitmap(bitmap, reqLonger, reqSize, true) :
-                    Bitmap.createScaledBitmap(bitmap, reqSize, reqLonger, true);
-
-            Log.i(TAG, String.format(Locale.ENGLISH, "loadImages:scaled w-%d h-%d", scaled.getWidth(), scaled.getHeight()));
-
-            if (scaled != bitmap) bitmap.recycle();
-            return scaled;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Error loading image", Toast.LENGTH_SHORT).show();
-            return null;
-        }
-
-    }
-
-
-    private void runFacialRec(Bitmap bitmap) {
-        vToolbar.setTitle("Select a face");
-    }
-
-    private SparseArray<Face> detectFaces(Bitmap bitmap) {
-        if (getContext() == null) return null;
-
-        mFaceDetector = new FaceDetector.Builder(getContext())
-                .setMinFaceSize(0.25f) //NOTE: proportion to image. change accordingly
-                .setTrackingEnabled(false)
-                .build();
-
-        if (!mFaceDetector.isOperational()) {
-            new AlertDialog.Builder(getContext())
-                    .setTitle("Facial recognition not ready")
-                    .setMessage("Your phone is currently installing facial recognition capabilities. Please try again when installation has finished.")
-                    .setPositiveButton("Okay", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    }).show();
-
-            return null;
-        }
-
-        final Frame frame = new Frame.Builder().setBitmap(bitmap).build();
-        return mFaceDetector.detect(frame);
-    }
-
-
-    private void showProgress(boolean show) {
+    @Override
+    public void showProgress(boolean show) {
         if (show) {
             vProgressBar.setVisibility(View.VISIBLE);
             vConfirmButton.setVisibility(View.INVISIBLE);
@@ -246,44 +129,34 @@ public class FacialRecFragment extends Fragment implements OnFinished {
         }
     }
 
-    private void onConfirmClick() {
-        if (getContext() == null) return;
-        if (vImageView.getSelectedFace() == null) {
-            Toast.makeText(getContext(), "Please select a face", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        showProgress(true);
-        mCropSubscription = Observable.just(cropImage())
-                .subscribeOn(io())
-                .observeOn(mainThread())
-                .subscribe(new Action1<Bitmap>() {
-                    @Override
-                    public void call(Bitmap bitmap) {
-                        if (bitmap != null && mOnConfirmFace != null) {
-                            mOnConfirmFace.onConfirmFace(bitmap, FacialRecFragment.this);
-                            //Log.i(TAG, "call: cropped");
-                        } else {
-                            onFinished();
-                        }
-                    }
-                });
+    @Override
+    public void setToolbarTitle(String title) {
+        vToolbar.setTitle(title);
     }
 
-    private Bitmap cropImage() {
-        Bitmap cachedBitmap = vImageView.getCachedBitmap();
-        if (cachedBitmap != null) {
-            CustomFace face = vImageView.getSelectedFace().getFace();
+    @Override
+    public void showToast(String message) {
+        if (getActivity() != null)
+            Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+    }
 
-            Bitmap bitmap = Bitmap.createBitmap(cachedBitmap, face.x, face.y, face.getWidth(), face.getHeight());
+    @Override
+    public void showAlert(@StringRes int title, @StringRes int message) {
+        if (getContext() != null)
+            new AlertDialog.Builder(getActivity())
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setCancelable(true)
+                    .show();
+    }
 
-            //NOTE: test code
-            ImageUtils.savePicture(getContext(), bitmap);
+    @Override
+    public void faceCropped(Bitmap bitmap) {
+        if (mOnFaceResult != null)
+            mOnFaceResult.onFaceResult(bitmap, this);
 
-            return bitmap; //ImageUtils.encodeImageBase64(bitmap);
-        }
-
-        return null;
+        //note : test code
+        ImageUtils.savePicture(getContext(), bitmap);
     }
 
 
@@ -292,28 +165,25 @@ public class FacialRecFragment extends Fragment implements OnFinished {
         showProgress(false);
     }
 
-    public interface OnConfirmFace {
-        void onConfirmFace(Bitmap bitmap, OnFinished onFinished);
+    public interface OnFaceResult {
+        void onFaceResult(Bitmap bitmap, OnFinished onFinished);
 
         //called when this fragment is destroyed
         //stop actions if FacialRecFragment is destroyed
-        void onStopSearch();
+        void onSearchStopped();
     }
 
 
     @Override
     public void onStop() {
         super.onStop();
-        if (mCropSubscription != null) mCropSubscription.unsubscribe();
+        mFacialRecPresenter.stopProcesses();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mFaceDetector != null) mFaceDetector.release();
-        if (mFacialRecSubscription != null) mFacialRecSubscription.unsubscribe();
-
-        mOnConfirmFace.onStopSearch();
+        mOnFaceResult.onSearchStopped();
     }
 }
 

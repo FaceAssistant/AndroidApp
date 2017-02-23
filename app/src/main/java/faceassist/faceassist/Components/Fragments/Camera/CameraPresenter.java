@@ -231,6 +231,7 @@ public class CameraPresenter implements CameraContract.Presenter {
                                 }
                             });
         } else if (getCamera(cameraId)) { //were able to find a camera to use
+            textureView.setCamera(mCamera);
             start(textureView, holder);
         }
     }
