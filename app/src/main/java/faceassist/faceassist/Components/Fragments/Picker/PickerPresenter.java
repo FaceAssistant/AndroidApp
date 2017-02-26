@@ -91,7 +91,6 @@ public class PickerPresenter implements PickerContract.Presenter, LoaderManager.
 
         final HashSet<BucketItem> bucketItems = new HashSet<>();
 
-        //mUnfilteredGalleryItems.clear();
         ArrayList<GalleryItem> galleryItems = new ArrayList<>();
 
         if (cursor.moveToFirst()) {
