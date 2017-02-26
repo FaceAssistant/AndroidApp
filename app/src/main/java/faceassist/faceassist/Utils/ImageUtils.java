@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Base64;
@@ -125,8 +127,34 @@ public class ImageUtils {
         BitmapFactory.Options o2 = new BitmapFactory.Options();
         o2.inSampleSize = scale;
 
-        //return cropped;
+        Bitmap bitmap = BitmapFactory.decodeStream(c.getContentResolver().openInputStream(uri), null, o2);
 
-        return BitmapFactory.decodeStream(c.getContentResolver().openInputStream(uri), null, o2);
+        int rotation = getUriRotation(uri);
+        if (rotation == 0){
+            return bitmap;
+        }else {
+            Matrix matrix = new Matrix();
+            matrix.preRotate(rotation);
+
+            Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            if (rotated != bitmap) bitmap.recycle();
+
+            return rotated;
+        }
+    }
+
+
+    private static int getUriRotation(Uri uri) throws IOException{
+        ExifInterface exif = new ExifInterface(uri.getPath());
+
+        int rot = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        return exifToDegrees(rot);
+    }
+
+    private static int exifToDegrees(int exifOrientation) {
+        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) { return 90; }
+        else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {  return 180; }
+        else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {  return 270; }
+        return 0;
     }
 }

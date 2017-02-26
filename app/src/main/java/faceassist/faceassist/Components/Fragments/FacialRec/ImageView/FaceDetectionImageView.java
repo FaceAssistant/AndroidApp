@@ -117,6 +117,8 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
         try {
             Bitmap bitmap = ImageUtils.decodeUri(getContext(), image, reqSize);
 
+            if(bitmap == null) return null;
+
             boolean heightShorter = bitmap.getWidth() > bitmap.getHeight();
 
             int shorter, longer;

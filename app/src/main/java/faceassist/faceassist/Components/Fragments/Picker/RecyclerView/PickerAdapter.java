@@ -73,7 +73,7 @@ public class PickerAdapter extends RecyclerView.Adapter<PickerAdapter.GalleryVie
 
             mRequestManager.load(item.uri)
                     .asBitmap()
-                    .thumbnail(0.25f)
+                    .thumbnail(0.1f)
                     .into(vImageView);
 
         }
