@@ -196,4 +196,10 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mUploadSubscription != null) mUploadSubscription.unsubscribe();
+    }
 }

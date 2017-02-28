@@ -4,8 +4,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
@@ -33,7 +35,7 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
     private static final String IMAGE_URI = "image_uri";
 
     private View vProgressBar;
-    private View vConfirmButton;
+    private FloatingActionButton vConfirmButton;
 
     private Uri mImageUri;
 
@@ -79,7 +81,7 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
         View root = inflater.inflate(R.layout.fragment_facial_rec, container, false);
 
         vProgressBar = root.findViewById(R.id.progressbar);
-        vConfirmButton = root.findViewById(R.id.confirm_button);
+        vConfirmButton = (FloatingActionButton) root.findViewById(R.id.confirm_button);
         vImageView = (FaceDetectionImageView) root.findViewById(R.id.image_view);
 
         mFacialRecPresenter = new FacialRecPresenter(this);
@@ -148,6 +150,11 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
                     .setMessage(message)
                     .setCancelable(true)
                     .show();
+    }
+
+    @Override
+    public void setSubmitButtonImage(@DrawableRes int image) {
+        vConfirmButton.setImageResource(image);
     }
 
     @Override

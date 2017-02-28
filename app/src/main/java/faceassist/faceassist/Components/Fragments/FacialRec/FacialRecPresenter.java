@@ -19,9 +19,11 @@ import static rx.schedulers.Schedulers.io;
 
 public class FacialRecPresenter implements FacialRecContract.Presenter {
 
-
     private FacialRecContract.View mFacialRecView;
     private Subscription mCropSubscription;
+    private boolean mCroppingDone = false;
+    private boolean mBitmapLoaded = false;
+
 
     public FacialRecPresenter(FacialRecContract.View view){
         mFacialRecView = view;
@@ -29,29 +31,43 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
 
     @Override
     public void clickedSubmit(FaceDetectionImageView imageView) {
-        if (imageView.getSelectedFace() == null) {
-            mFacialRecView.showToast("Select a face");
-            return;
-        }
+        if (!mBitmapLoaded) return;
+        if (mCroppingDone) {
+            if (imageView.getSelectedFace() == null) {
+                mFacialRecView.showToast("Select a face");
+                return;
+            }
 
+            mFacialRecView.showProgress(true);
+
+            if (mCropSubscription != null) mCropSubscription.unsubscribe();
+            mCropSubscription = Observable.just(cropImage(imageView))
+                    .subscribeOn(io())
+                    .observeOn(mainThread())
+                    .subscribe(new Action1<Bitmap>() {
+                        @Override
+                        public void call(Bitmap bitmap) {
+                            if (bitmap != null) {
+                                mFacialRecView.faceCropped(bitmap);
+                                //Log.i(TAG, "call: cropped");
+                            } else {
+                                mFacialRecView.showProgress(false);
+                                mFacialRecView.showToast("Error cropping image");
+                            }
+                        }
+                    });
+        }else {
+            detectFaces(imageView);
+        }
+    }
+
+    @Override
+    public void detectFaces(FaceDetectionImageView imageView) {
+        mCroppingDone = true;
         mFacialRecView.showProgress(true);
 
-        if (mCropSubscription != null) mCropSubscription.unsubscribe();
-        mCropSubscription = Observable.just(cropImage(imageView))
-                .subscribeOn(io())
-                .observeOn(mainThread())
-                .subscribe(new Action1<Bitmap>() {
-                    @Override
-                    public void call(Bitmap bitmap) {
-                        if (bitmap != null) {
-                            mFacialRecView.faceCropped(bitmap);
-                            //Log.i(TAG, "call: cropped");
-                        } else {
-                            mFacialRecView.showProgress(false);
-                            mFacialRecView.showToast("Error cropping image");
-                        }
-                    }
-                });
+        imageView.setCropable(false);
+        imageView.updateFaces();
     }
 
 
@@ -71,12 +87,25 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
     }
 
     @Override
+    public void onBitmapLoadStarted() {
+        mFacialRecView.setToolbarTitle("Loading image...");
+    }
+
+    @Override
+    public void onBitmapLoaded() {
+        mBitmapLoaded = true;
+        mFacialRecView.setToolbarTitle("Scale and crop image");
+    }
+
+    @Override
     public void onStartFacialRec() {
         mFacialRecView.setToolbarTitle("Processing image...");
     }
 
     @Override
     public void onCompleteFacialRec() {
+        mFacialRecView.setSubmitButtonImage(R.drawable.ic_action_send);
+        mFacialRecView.showProgress(false);
         mFacialRecView.setToolbarTitle("Select a face");
     }
 
