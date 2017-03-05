@@ -47,7 +47,14 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
         getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
         if (hasReadPermission()) {
-            addPickerFragment();
+            //addPickerFragment();
+
+
+            //note :tests
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, FacialRecFragment.newInstance(null))
+                    .addToBackStack(null)
+                    .commit();
         } else {
             addPermissionsFragment();
         }

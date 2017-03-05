@@ -12,7 +12,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.widget.ImageView;
 
 import com.google.android.gms.vision.Frame;
@@ -49,14 +48,16 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
 
     private Bitmap mCacheBitmap;
 
-    private float mTranslationX;
-    private float mTranslationY;
-    private float mScale = 1;
-
-    private int mOgBitmapWidth;
-    private int mOgBitmapHeight;
+//    private float mTranslationX;
+//    private float mTranslationY;
+//    private float mScale = 1;
+//
+//    private int mOgBitmapWidth;
+//    private int mOgBitmapHeight;
 
     private boolean mCropable = true;
+
+    private TouchManager mTouchManager = new TouchManager();
 
     //private ScaleGestureDetector mScaleGestureDetector;
 
@@ -86,7 +87,6 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
         LayoutParams params = new LayoutParams(MATCH_PARENT, MATCH_PARENT);
         vImageView.setLayoutParams(params);
         vImageView.setScaleType(ImageView.ScaleType.MATRIX);
-        vImageView.setImageMatrix(new Matrix());
         addView(vImageView);
 
         //mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
@@ -117,6 +117,11 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
                             @Override
                             public void onNext(Bitmap bitmap) {
                                 if (bitmap != null) {
+                                    mTouchManager.setBitmapDimens(bitmap.getWidth(), bitmap.getHeight());
+                                    mTouchManager.setViewDimens(vImageView.getWidth(), vImageView.getHeight());
+                                    mTouchManager.resetImage();
+                                    vImageView.setImageMatrix(mTouchManager.getNewImageMatrix());
+
                                     setBitmap(bitmap);
                                     mFaceDetectionListener.onBitmapLoaded();
                                 } else
@@ -174,19 +179,19 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
         if (bitmap != null) {
             clearFaceViews();
 
-            Matrix matrix = new Matrix();
-
-            float iw = vImageView.getWidth();
-            float ih = vImageView.getHeight();
-
-            mOgBitmapWidth = bitmap.getWidth();
-            mOgBitmapHeight = bitmap.getHeight();
-
-            mTranslationX = (iw - mOgBitmapWidth) / 2;
-            mTranslationY = (ih - mOgBitmapHeight) / 2;
-
-            matrix.postTranslate(mTranslationX, mTranslationY);
-            vImageView.setImageMatrix(matrix);
+//            Matrix matrix = new Matrix();
+//
+//            float iw = vImageView.getWidth();
+//            float ih = vImageView.getHeight();
+//
+//            mOgBitmapWidth = bitmap.getWidth();
+//            mOgBitmapHeight = bitmap.getHeight();
+//
+//            mTranslationX = (iw - mOgBitmapWidth) / 2;
+//            mTranslationY = (ih - mOgBitmapHeight) / 2;
+//
+//            matrix.postTranslate(mTranslationX, mTranslationY);
+//            vImageView.setImageMatrix(matrix);
             vImageView.setImageBitmap(bitmap);
         }
     }
@@ -348,174 +353,65 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
     }
 
 
-    private static final int INVALID_POINTER_ID = -1;
-
-    private float mPLastX;
-    private float mPLastY;
-    private int mActivePointerId = INVALID_POINTER_ID;
-
-    private float mLastX;
-    private float mLastY;
-    private int mSecondaryPointerId = INVALID_POINTER_ID;
-
-    private float mFocusX;
-    private float mFocusY;
-
-    private double mOldDistance;
-
 
     private boolean handleMoveAndScale(MotionEvent event) {
-        int pointerIndex;
-        int pointerId;
-
-        switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN: //first touch, save initial location
-                Log.i(TAG, "handleMoveAndScale: primary down");
-                pointerIndex = event.getActionIndex();
-
-                mPLastX = event.getX(pointerIndex);
-                mPLastY = event.getY(pointerIndex);
-
-                mActivePointerId = event.getPointerId(pointerIndex);
-                break;
-
-            case MotionEvent.ACTION_POINTER_DOWN:
-                pointerIndex = event.getActionIndex();
-                if (mSecondaryPointerId == INVALID_POINTER_ID && mActivePointerId != pointerIndex) {
-                    Log.i(TAG, "handleMoveAndScale: secondary set");
-                    mSecondaryPointerId = event.getPointerId(pointerIndex);
-                    mLastX = event.getX(pointerIndex);
-                    mLastY = event.getY(pointerIndex);
-                    mOldDistance = Math.sqrt(Math.pow(mLastX - mPLastX, 2) + Math.pow(mLastY - mPLastY, 2));
-                }
-            case MotionEvent.ACTION_MOVE: //finger moves
-                pointerIndex = event.getActionIndex();
-
-                pointerId = event.getPointerId(pointerIndex);
-
-                float x = event.getX(pointerIndex);
-                float y = event.getY(pointerIndex);
-
-                if (mSecondaryPointerId == INVALID_POINTER_ID) {
-                    Log.i(TAG, "handleMoveAndScale: move");
-                    if (pointerId != mActivePointerId) break;
-                    moveImage(x - mPLastX, y - mPLastY);
-                    //updateImage(1f,x - mPLastX, y - mPLastY );
-                    mPLastX = x;
-                    mPLastY = y;
-                } else {
-
-                    Log.i(TAG, "handleMoveAndScale: scale");
-                    mFocusX = (int)((mLastX + mPLastX) / 2);
-                    mFocusY = (int)((mLastY + mPLastY) / 2);
-
-                    if (pointerId == mActivePointerId) {
-                        Log.i(TAG, "handleMoveAndScale: active move");
-                        mPLastX = x;
-                        mPLastY = y;
-                    } else {
-                        Log.i(TAG, "handleMoveAndScale: seconday move");
-                        mLastX = x;
-                        mLastY = y;
-                    }
-
-                    double newDis = Math.sqrt(Math.pow(mLastX - mPLastX, 2) + Math.pow(mLastY - mPLastY, 2));
-                    updateImage((float)(newDis / mOldDistance), 0, 0);
-                    //scaleImage((float)(newDis / mOldDistance), mFocusX, mFocusY);
-                    mOldDistance = newDis;
-                }
-
-                break;
-            case MotionEvent.ACTION_UP:
-                mActivePointerId = INVALID_POINTER_ID;
-                break;
-
-            case MotionEvent.ACTION_CANCEL:
-                mActivePointerId = INVALID_POINTER_ID;
-                break;
-
-            case MotionEvent.ACTION_POINTER_UP: //a finger was lifted up
-                pointerIndex = event.getActionIndex();
-                pointerId = event.getPointerId(pointerIndex);
-
-                //the current active was the one lifted, set the other finger as active
-                if (pointerId == mActivePointerId) {
-                    Log.i(TAG, "handleMoveAndScale: primary up");
-                    int newPointerIndex = pointerIndex == 0 ? 1 : 0;
-                    mPLastX = event.getX(newPointerIndex);
-                    mPLastY = event.getY(newPointerIndex);
-                    mActivePointerId = event.getPointerId(newPointerIndex);
-                    mSecondaryPointerId = INVALID_POINTER_ID;
-                } else if (pointerId == mSecondaryPointerId) {
-                    Log.i(TAG, "handleMoveAndScale: secondary up");
-                    mSecondaryPointerId = INVALID_POINTER_ID;
-                }
-                break;
-
-            default:
-                return false;
+        if(mTouchManager.onTouch(event)) {
+            vImageView.setImageMatrix(mTouchManager.getNewImageMatrix());
         }
 
         return true;
     }
 
 
-    private void updateImage(float scale, float dx, float dy){
-        mScale = clip(mScale * scale, 1f, 3f);
-
-        //mTranslationY = clip(mTranslationY, vImageView.getHeight(), dy, (int)(mOgBitmapHeight * mScale));
-        //mTranslationX = clip(mTranslationX, vImageView.getWidth(), dx, (int)(mOgBitmapWidth * mScale));
-
-        Matrix matrix = vImageView.getMatrix();
-        matrix.postScale(mScale, mScale, mFocusX, mFocusY);
-        matrix.postTranslate(mTranslationX, mTranslationY);
-        vImageView.setImageMatrix(matrix);
-
-    }
-
-    private void moveImage(float dx, float dy) {
-
-        //double scal = Math.sqrt(Math.pow(mScale, 2) + Math.pow(mScale, 2));
-        mTranslationY = clip(mTranslationY, vImageView.getHeight(), dy, (int)(mOgBitmapHeight ));
-        mTranslationX = clip(mTranslationX, vImageView.getWidth(), dx, (int)(mOgBitmapWidth ));
-
-        Matrix matrix = vImageView.getMatrix();
-        matrix.postScale(mScale, mScale, mFocusX, mFocusY);
-        matrix.postTranslate(mTranslationX, mTranslationY);
-        vImageView.setImageMatrix(matrix);
-    }
-
-    /**
-     * clips values - don't want image moving out of view
-     *
-     * @param curr        - current translation
-     * @param viewDimen   - imageView dimension
-     * @param change      - change in translation
-     * @param bitmapDimen - bitmap dimension
-     *                    ex. to find new X translation, params are (mTranslationX, vImageView.getWidth, dx, mOgBitmapWidth)
-     */
-
-    private float clip(float curr, int viewDimen, float change, int bitmapDimen) {
-        float newVal = curr + change;
-        if (newVal >= 0) return 0;
-        if (newVal + bitmapDimen <= viewDimen) return (viewDimen - bitmapDimen) / 2;
-        else return newVal;
-    }
-
-    private float clip(float val, float min, float max) {
-        if (val <= min) return min;
-        else if (val >= max) return max;
-        return val;
-    }
-
-
-//    private void scaleImage(float newScale, float focusX, float focusY) {
-//        mScale = clip(mScale * newScale, 1f, 3f);
-//        Matrix matrix = vImageView.getMatrix();
-//        matrix.preScale(mScale, mScale, focusX, focusY);
+//    private void updateImage(float scale, float dx, float dy){
+//        mScale = clip(mScale * scale, 1f, 3f);
 //
+//        //mTranslationY = clip(mTranslationY, vImageView.getHeight(), dy, (int)(mOgBitmapHeight * mScale));
+//        //mTranslationX = clip(mTranslationX, vImageView.getWidth(), dx, (int)(mOgBitmapWidth * mScale));
+//
+//        Matrix matrix = vImageView.getMatrix();
+//        matrix.postScale(mScale, mScale, mFocusX, mFocusY);
+//        matrix.postTranslate(mTranslationX, mTranslationY);
+//        vImageView.setImageMatrix(matrix);
+//
+//    }
+
+//    private void moveImage(float dx, float dy) {
+//
+//        //double scal = Math.sqrt(Math.pow(mScale, 2) + Math.pow(mScale, 2));
+//        mTranslationY = clip(mTranslationY, vImageView.getHeight(), dy, (int)(mOgBitmapHeight ));
+//        mTranslationX = clip(mTranslationX, vImageView.getWidth(), dx, (int)(mOgBitmapWidth ));
+//
+//        Matrix matrix = vImageView.getMatrix();
+//        matrix.postScale(mScale, mScale, mFocusX, mFocusY);
+//        matrix.postTranslate(mTranslationX, mTranslationY);
 //        vImageView.setImageMatrix(matrix);
 //    }
+
+//    /**
+//     * clips values - don't want image moving out of view
+//     *
+//     * @param curr        - current translation
+//     * @param viewDimen   - imageView dimension
+//     * @param change      - change in translation
+//     * @param bitmapDimen - bitmap dimension
+//     *                    ex. to find new X translation, params are (mTranslationX, vImageView.getWidth, dx, mOgBitmapWidth)
+//     */
+//
+//    private float clip(float curr, int viewDimen, float change, int bitmapDimen) {
+//        float newVal = curr + change;
+//        if (newVal >= 0) return 0;
+//        if (newVal + bitmapDimen <= viewDimen) return (viewDimen - bitmapDimen) / 2;
+//        else return newVal;
+//    }
+//
+//    private float clip(float val, float min, float max) {
+//        if (val <= min) return min;
+//        else if (val >= max) return max;
+//        return val;
+//    }
+
+
 
 
     public interface FaceDetectionListener {
@@ -529,16 +425,6 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
 
         void onFailed(int error);
     }
-
-
-//    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener{
-//        @Override
-//        public boolean onScale(ScaleGestureDetector detector) {
-//            float newScale = clip(mScale * detector.getScaleFactor(), 1f, 4f);
-//            scaleImage(newScale, detector.getFocusX(), detector.getFocusY());
-//            return true;
-//        }
-//    }
 
 
 }

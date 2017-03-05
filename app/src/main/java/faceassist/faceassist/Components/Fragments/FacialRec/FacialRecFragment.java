@@ -115,7 +115,11 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
             mImageUri = getArguments().getParcelable(IMAGE_URI);
 
         if (mImageUri != null) {
+            //note tests
             vImageView.setImageUri(mImageUri);
+        }else {
+            Uri ima = Uri.parse("android.resource://faceassist.faceassist/" + R.drawable.dog03);
+            vImageView.setImageUri(ima);
         }
     }
 
