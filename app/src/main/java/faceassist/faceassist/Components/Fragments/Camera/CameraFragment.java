@@ -4,16 +4,15 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,6 @@ import java.io.File;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.CameraUtils;
 import faceassist.faceassist.Utils.ImageUtils;
-import faceassist.faceassist.Utils.OnToolbarMenuIconPressed;
 import faceassist.faceassist.Utils.PermissionUtils;
 
 /**
@@ -32,9 +30,10 @@ import faceassist.faceassist.Utils.PermissionUtils;
  */
 
 public class CameraFragment extends Fragment implements TextureView.SurfaceTextureListener, CameraPresenter.OrientationHelper,
-        CameraContract.View, CameraPresenter.BitmapSaver{
+        CameraContract.View, CameraPresenter.BitmapSaver {
 
     public static final String TAG = CameraFragment.class.getSimpleName();
+    public static final String ARGS_ICON = "back_icon";
 
     private CameraTextureView mCameraTextureView;
     private SurfaceTexture mSurfaceHolder;
@@ -54,8 +53,11 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
 
     }
 
-    public static CameraFragment newInstance() {
+    public static CameraFragment newInstance(@DrawableRes int backIcon) {
         CameraFragment cameraFragment = new CameraFragment();
+        Bundle args = new Bundle();
+        args.putInt(ARGS_ICON, backIcon);
+        cameraFragment.setArguments(args);
         return cameraFragment;
     }
 
@@ -92,27 +94,32 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
             }
         });
 
-        ((Toolbar) root.findViewById(R.id.toolbar)).setNavigationOnClickListener(new View.OnClickListener() {
+        Toolbar toolbar = (Toolbar) root.findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mCameraPresenter.safeToTakePictures())
-                    ((OnToolbarMenuIconPressed) getActivity()).onToolbarMenuIconPressed();
+                if (mCameraPresenter.safeToTakePictures() && getActivity() != null) {
+                    getActivity().onBackPressed();
+                }
             }
         });
+
+        int icon = getArguments().getInt(ARGS_ICON, -1);
+        toolbar.setNavigationIcon(icon == -1 ? R.drawable.ic_action_menu : icon);
 
 
         return root;
     }
 
-    private void setUpReverseButton(){
-        if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)){
+    private void setUpReverseButton() {
+        if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)) {
             mReverseCheckbox.setChecked(false);
             mReverseCheckbox.setClickable(false);
-        }else {
+        } else {
             mReverseCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    mCameraPresenter.swapCamera(mCameraTextureView, mSurfaceHolder,getCameraId());
+                    mCameraPresenter.swapCamera(mCameraTextureView, mSurfaceHolder, getCameraId());
                 }
             });
         }
@@ -124,7 +131,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         //restartPreview() is called when camera preview surface is created
         //to prevent redundancy, only run this one if surfaceCreated() isn't called when fragment resumed
         if (mSurfaceAlreadyCreated && PermissionUtils.hasCameraPermission(getContext()) && !mCameraPresenter.hasActiveCamera()) {
-            mCameraPresenter.restart(mCameraTextureView, mSurfaceHolder,getCameraId());
+            mCameraPresenter.restart(mCameraTextureView, mSurfaceHolder, getCameraId());
         }
     }
 
@@ -186,7 +193,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
     }
 
 
-    private int getCameraId(){
+    private int getCameraId() {
         return mReverseCheckbox.isChecked() ?
                 CameraUtils.getFrontCameraID(getContext()) : CameraUtils.getBackCameraID();
     }
@@ -194,7 +201,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
 
     @Override
     public void onImageTaken(Uri image) {
-        mOnImageTaken.onImageTake(image);
+        mOnImageTaken.onImageTaken(image);
     }
 
     @Override
@@ -206,7 +213,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
 
     // What to do with image after image taken
     public interface OnImageTaken {
-        void onImageTake(Uri image);
+        void onImageTaken(Uri image);
     }
 
 

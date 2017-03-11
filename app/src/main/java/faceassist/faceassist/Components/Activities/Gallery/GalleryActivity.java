@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecFragment;
@@ -47,14 +48,7 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
         getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
         if (hasReadPermission()) {
-            //addPickerFragment();
-
-
-            //note :tests
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, FacialRecFragment.newInstance(null))
-                    .addToBackStack(null)
-                    .commit();
+            addPickerFragment();
         } else {
             addPermissionsFragment();
         }
@@ -92,7 +86,6 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
             setResult(RESULT_CANCELED);
 
         super.onBackPressed();
-
     }
 
     private boolean mPermissionUpdated = false;
@@ -137,11 +130,11 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
     }
 
     @Override
-    public void onFaceResult(Bitmap bitmap, OnFinished onFinished) {
+    public void onFaceResult(Uri uri, OnFinished onFinished) {
 
         final WeakReference<OnFinished> mOnFinishedWeakReference = new WeakReference<>(onFinished);
 
-        mScaleSubscription = Observable.just(scaleBitmap(bitmap))
+        mScaleSubscription = Observable.just(scaleBitmap(uri))
                 .subscribeOn(io())
                 .observeOn(mainThread())
                 .subscribe(new Action1<Uri>() {
@@ -151,28 +144,38 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
                             mOnFinishedWeakReference.get().onFinished();
                         }
 
-                        Intent i = getIntent();
-                        i.putExtra(URI_KEY, uri);
-                        setResult(RESULT_OK, i);
-                        finish();
+                        if (uri != null) {
+                            Intent i = getIntent();
+                            i.putExtra(URI_KEY, uri);
+                            setResult(RESULT_OK, i);
+                            finish();
+                        }
                     }
                 });
     }
 
 
 
-    private Uri scaleBitmap(Bitmap bitmap){
-        Bitmap scaled;
+    private Uri scaleBitmap(Uri uri){
 
-        if (bitmap.getWidth() > bitmap.getHeight()){
-            scaled = Bitmap.createScaledBitmap(bitmap, (int)(bitmap.getWidth() * 100f / bitmap.getHeight()), 100, true);
-        }else {
-            scaled = Bitmap.createScaledBitmap(bitmap, 100, (int)(bitmap.getHeight() * 100f / bitmap.getWidth()), true);
+        try {
+            Bitmap bitmap = ImageUtils.decodeUri(this, uri, 100);
+
+            Bitmap scaled;
+
+            if (bitmap.getWidth() > bitmap.getHeight()) {
+                scaled = Bitmap.createScaledBitmap(bitmap, (int) (bitmap.getWidth() * 100f / bitmap.getHeight()), 100, true);
+            } else {
+                scaled = Bitmap.createScaledBitmap(bitmap, 100, (int) (bitmap.getHeight() * 100f / bitmap.getWidth()), true);
+            }
+
+            if (scaled != bitmap) bitmap.recycle();
+
+            return Uri.fromFile(ImageUtils.savePictureToCache(this, scaled).getAbsoluteFile());
+        }catch (IOException e){
+            e.printStackTrace();
+            return null;
         }
-
-        if (scaled != bitmap) bitmap.recycle();
-
-        return Uri.fromFile(ImageUtils.savePictureToCache(this, scaled).getAbsoluteFile());
     }
 
     @Override

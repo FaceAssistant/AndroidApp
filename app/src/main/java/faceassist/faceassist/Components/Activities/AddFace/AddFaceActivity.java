@@ -1,9 +1,11 @@
 package faceassist.faceassist.Components.Activities.AddFace;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,6 +26,7 @@ import faceassist.faceassist.Components.Activities.AddFace.Models.ImageEntry;
 import faceassist.faceassist.Components.Activities.AddFace.Models.TextEntry;
 import faceassist.faceassist.Components.Activities.AddFace.RecyclerView.AddFaceAdapter;
 import faceassist.faceassist.Components.Activities.AddFace.RecyclerView.ImageEntryViewHolder;
+import faceassist.faceassist.Components.Activities.Camera.PictureUriActivity;
 import faceassist.faceassist.Components.Activities.Gallery.GalleryActivity;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.FileUtils;
@@ -133,8 +136,8 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                                                     finish();
                                                 }
                                             });
-                                        }else {
-                                            Log.e(TAG, "onResponse: "+response.code()+ " " + response.body().string());
+                                        } else {
+                                            Log.e(TAG, "onResponse: " + response.code() + " " + response.body().string());
                                         }
                                     }
                                 });
@@ -142,14 +145,14 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                 });
     }
 
-    private HashMap<String, Object> getRequestBody(){
+    private HashMap<String, Object> getRequestBody() {
         HashMap<String, Object> params = new HashMap<>();
         JSONArray array = new JSONArray();
-        for (Entry entry : mAddFaceAdapter.getEntries()){
-            if (entry instanceof TextEntry){
+        for (Entry entry : mAddFaceAdapter.getEntries()) {
+            if (entry instanceof TextEntry) {
                 TextEntry textEntry = (TextEntry) entry;
                 params.put(textEntry.getTitle(), textEntry.getBody());
-            }else if (entry instanceof  ImageEntry){
+            } else if (entry instanceof ImageEntry) {
                 ImageEntry imageEntry = (ImageEntry) entry;
                 if (imageEntry.getImageUri() != null) {
                     try {
@@ -157,42 +160,57 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }else Log.i(TAG, "getRequestBody: entry was null");
+                } else Log.i(TAG, "getRequestBody: entry was null");
             }
         }
         params.put("images", array);
         return params;
     }
 
-    private void showProgress(boolean show){
-        if (show){
+    private void showProgress(boolean show) {
+        if (show) {
             vRecyclerView.setVisibility(View.GONE);
             vProgress.setVisibility(View.VISIBLE);
-        }else {
+        } else {
             vProgress.setVisibility(View.GONE);
             vRecyclerView.setVisibility(View.VISIBLE);
         }
     }
 
     @Override
-    public void onImageClick(int requestCode) {
-        Intent i = new Intent(this, GalleryActivity.class);
-        startActivityForResult(i, requestCode);
+    public void onImageClick(final int requestCode) {
+
+        new AlertDialog.Builder(this)
+                .setItems(new String[]{"Camera", "Gallery"}, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Class c = PictureUriActivity.class;
+
+                        if (i == 1){
+                            c = GalleryActivity.class;
+                        }
+
+                        Intent intent = new Intent(AddFaceActivity.this, c);
+                        startActivityForResult(intent, requestCode);
+                    }
+                }).show();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         int pos = requestCode - ImageEntryViewHolder.REQUEST_CODE_BASE;
-        if (pos > 0 && pos <= 12){
-            if (resultCode == RESULT_OK){
+
+        //not position is max 12 atm
+        if (pos > 0 && pos <= 12) {
+            if (resultCode == RESULT_OK) {
                 Uri uri = data.getParcelableExtra(GalleryActivity.URI_KEY);
-                if (uri != null){
-                    Log.i(TAG, "onActivityResult: "+uri.getPath());
-                    ((ImageEntry)mAddFaceAdapter.getEntries().get(pos)).setImageUri(uri);
+                if (uri != null) {
+                    Log.i(TAG, "onActivityResult: " + uri.getPath());
+                    ((ImageEntry) mAddFaceAdapter.getEntries().get(pos)).setImageUri(uri);
                     mAddFaceAdapter.notifyItemChanged(pos);
                 }
             }
-        }else {
+        } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
     }

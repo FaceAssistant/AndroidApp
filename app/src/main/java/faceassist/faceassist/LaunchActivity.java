@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
-import faceassist.faceassist.Components.Activities.Camera.CameraActivity;
+import faceassist.faceassist.Components.Activities.Camera.FacialResultActivity;
 
 /**
  * Created by QiFeng on 1/30/17.
@@ -30,7 +30,7 @@ public class LaunchActivity extends AppCompatActivity {
         super.onPostResume();
 
         //start next activity
-        Intent i = new Intent(LaunchActivity.this, CameraActivity.class);
+        Intent i = new Intent(LaunchActivity.this, FacialResultActivity.class);
         startActivity(i);
         finish();
     }

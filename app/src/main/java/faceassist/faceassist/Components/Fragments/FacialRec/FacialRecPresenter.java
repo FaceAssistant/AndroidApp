@@ -1,11 +1,13 @@
 package faceassist.faceassist.Components.Fragments.FacialRec;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
 
 import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.CustomFace;
 import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.FaceDetectionErrors;
 import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.FaceDetectionImageView;
 import faceassist.faceassist.R;
+import faceassist.faceassist.Utils.ImageUtils;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
@@ -44,11 +46,11 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
             mCropSubscription = Observable.just(cropImage(imageView))
                     .subscribeOn(io())
                     .observeOn(mainThread())
-                    .subscribe(new Action1<Bitmap>() {
+                    .subscribe(new Action1<Uri>() {
                         @Override
-                        public void call(Bitmap bitmap) {
-                            if (bitmap != null) {
-                                mFacialRecView.faceCropped(bitmap);
+                        public void call(Uri uri) {
+                            if (uri != null) {
+                                mFacialRecView.faceCropped(uri);
                                 //Log.i(TAG, "call: cropped");
                             } else {
                                 mFacialRecView.showProgress(false);
@@ -64,18 +66,18 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
     @Override
     public void detectFaces(FaceDetectionImageView imageView) {
         mCroppingDone = true;
-        mFacialRecView.showProgress(true);
 
         imageView.setCropable(false);
         imageView.updateFaces();
     }
 
 
-    private Bitmap cropImage(FaceDetectionImageView imageView) {
+    private Uri cropImage(FaceDetectionImageView imageView) {
         Bitmap cachedBitmap = imageView.getCachedBitmap();
         if (cachedBitmap != null) {
             CustomFace face = imageView.getSelectedFace().getFace();
-            return Bitmap.createBitmap(cachedBitmap, face.x, face.y, face.getWidth(), face.getHeight());
+            Bitmap map = Bitmap.createBitmap(cachedBitmap, face.x, face.y, face.getWidth(), face.getHeight());
+            ImageUtils.savePictureToCache(imageView.getContext(), map);
         }
 
         return null;
@@ -99,6 +101,7 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
 
     @Override
     public void onStartFacialRec() {
+        mFacialRecView.showProgress(true);
         mFacialRecView.setToolbarTitle("Processing image...");
     }
 
@@ -113,7 +116,7 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
     public void onFailed(int error) {
 
         if (error == FaceDetectionErrors.ERROR_NO_LIBRARY){
-            mFacialRecView.showAlert(R.string.no_lib_title, R.string.no_lib_title);
+            mFacialRecView.showAlert(R.string.no_lib_title, R.string.no_lib_text);
         }else {
             String text = error == FaceDetectionErrors.ERROR_GETTING_FACES ?
                     "Error detecting faces" :

@@ -1,7 +1,7 @@
 package faceassist.faceassist.Components.Fragments.FacialRec;
 
 import android.content.Context;
-import android.graphics.Bitmap;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
@@ -18,7 +18,6 @@ import android.widget.Toast;
 
 import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.FaceDetectionImageView;
 import faceassist.faceassist.R;
-import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.OnFinished;
 
 
@@ -115,11 +114,7 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
             mImageUri = getArguments().getParcelable(IMAGE_URI);
 
         if (mImageUri != null) {
-            //note tests
             vImageView.setImageUri(mImageUri);
-        }else {
-            Uri ima = Uri.parse("android.resource://faceassist.faceassist/" + R.drawable.dog03);
-            vImageView.setImageUri(ima);
         }
     }
 
@@ -152,7 +147,12 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
             new AlertDialog.Builder(getActivity())
                     .setTitle(title)
                     .setMessage(message)
-                    .setCancelable(true)
+                    .setNegativeButton("Okay", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    })
                     .show();
     }
 
@@ -162,12 +162,12 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
     }
 
     @Override
-    public void faceCropped(Bitmap bitmap) {
-        if (mOnFaceResult != null)
-            mOnFaceResult.onFaceResult(bitmap, this);
+    public void faceCropped(Uri uri) {
+        //ImageUtils.savePicture(getContext(), bitmap);
 
-        //note : test code
-        ImageUtils.savePicture(getContext(), bitmap);
+        if (mOnFaceResult != null)
+            mOnFaceResult.onFaceResult(uri, this);
+
     }
 
 
@@ -177,7 +177,7 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
     }
 
     public interface OnFaceResult {
-        void onFaceResult(Bitmap bitmap, OnFinished onFinished);
+        void onFaceResult(Uri uri, OnFinished onFinished);
 
         //called when this fragment is destroyed
         //stop actions if FacialRecFragment is destroyed

@@ -82,6 +82,8 @@ public class PickerPresenter implements PickerContract.Presenter, LoaderManager.
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        if (cursor == null) return;
+
         int pathIndex = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA);
         int idIndex = cursor.getColumnIndex(MediaStore.Files.FileColumns._ID);
         int mediaIndex = cursor.getColumnIndex(MediaStore.Files.FileColumns.MEDIA_TYPE);

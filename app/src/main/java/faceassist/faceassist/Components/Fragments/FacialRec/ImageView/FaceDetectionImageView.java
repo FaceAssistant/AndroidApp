@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
@@ -48,18 +47,9 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
 
     private Bitmap mCacheBitmap;
 
-//    private float mTranslationX;
-//    private float mTranslationY;
-//    private float mScale = 1;
-//
-//    private int mOgBitmapWidth;
-//    private int mOgBitmapHeight;
-
     private boolean mCropable = true;
 
     private TouchManager mTouchManager = new TouchManager();
-
-    //private ScaleGestureDetector mScaleGestureDetector;
 
     public FaceDetectionImageView(Context context) {
         super(context);
@@ -88,8 +78,6 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
         vImageView.setLayoutParams(params);
         vImageView.setScaleType(ImageView.ScaleType.MATRIX);
         addView(vImageView);
-
-        //mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
     }
 
 
@@ -178,21 +166,12 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
     private void setBitmap(Bitmap bitmap) { //add runnable ?
         if (bitmap != null) {
             clearFaceViews();
-
-//            Matrix matrix = new Matrix();
-//
-//            float iw = vImageView.getWidth();
-//            float ih = vImageView.getHeight();
-//
-//            mOgBitmapWidth = bitmap.getWidth();
-//            mOgBitmapHeight = bitmap.getHeight();
-//
-//            mTranslationX = (iw - mOgBitmapWidth) / 2;
-//            mTranslationY = (ih - mOgBitmapHeight) / 2;
-//
-//            matrix.postTranslate(mTranslationX, mTranslationY);
-//            vImageView.setImageMatrix(matrix);
             vImageView.setImageBitmap(bitmap);
+
+            if (bitmap.getHeight() == bitmap.getWidth()){
+                mCropable = false;
+                updateFaces();
+            }
         }
     }
 
@@ -348,7 +327,6 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
         if (mCropable)
             handleMoveAndScale(event);
 
-
         return true;
     }
 
@@ -361,57 +339,6 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
 
         return true;
     }
-
-
-//    private void updateImage(float scale, float dx, float dy){
-//        mScale = clip(mScale * scale, 1f, 3f);
-//
-//        //mTranslationY = clip(mTranslationY, vImageView.getHeight(), dy, (int)(mOgBitmapHeight * mScale));
-//        //mTranslationX = clip(mTranslationX, vImageView.getWidth(), dx, (int)(mOgBitmapWidth * mScale));
-//
-//        Matrix matrix = vImageView.getMatrix();
-//        matrix.postScale(mScale, mScale, mFocusX, mFocusY);
-//        matrix.postTranslate(mTranslationX, mTranslationY);
-//        vImageView.setImageMatrix(matrix);
-//
-//    }
-
-//    private void moveImage(float dx, float dy) {
-//
-//        //double scal = Math.sqrt(Math.pow(mScale, 2) + Math.pow(mScale, 2));
-//        mTranslationY = clip(mTranslationY, vImageView.getHeight(), dy, (int)(mOgBitmapHeight ));
-//        mTranslationX = clip(mTranslationX, vImageView.getWidth(), dx, (int)(mOgBitmapWidth ));
-//
-//        Matrix matrix = vImageView.getMatrix();
-//        matrix.postScale(mScale, mScale, mFocusX, mFocusY);
-//        matrix.postTranslate(mTranslationX, mTranslationY);
-//        vImageView.setImageMatrix(matrix);
-//    }
-
-//    /**
-//     * clips values - don't want image moving out of view
-//     *
-//     * @param curr        - current translation
-//     * @param viewDimen   - imageView dimension
-//     * @param change      - change in translation
-//     * @param bitmapDimen - bitmap dimension
-//     *                    ex. to find new X translation, params are (mTranslationX, vImageView.getWidth, dx, mOgBitmapWidth)
-//     */
-//
-//    private float clip(float curr, int viewDimen, float change, int bitmapDimen) {
-//        float newVal = curr + change;
-//        if (newVal >= 0) return 0;
-//        if (newVal + bitmapDimen <= viewDimen) return (viewDimen - bitmapDimen) / 2;
-//        else return newVal;
-//    }
-//
-//    private float clip(float val, float min, float max) {
-//        if (val <= min) return min;
-//        else if (val >= max) return max;
-//        return val;
-//    }
-
-
 
 
     public interface FaceDetectionListener {

@@ -28,7 +28,7 @@
         </activity>
 
         <activity
-            android:name=".Components.Activities.Camera.CameraActivity"
+            android:name=".Components.Activities.Camera.FacialResultActivity"
             android:screenOrientation="portrait"
         />
 
@@ -47,6 +47,9 @@
             android:screenOrientation="portrait"
         />
 
+        <activity android:name=".Components.Activities.Camera.PictureUriActivity"
+                  android:screenOrientation="portrait"
+        />
 
 
     </application>

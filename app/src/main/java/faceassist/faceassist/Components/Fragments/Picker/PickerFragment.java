@@ -15,7 +15,6 @@ import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -245,48 +244,6 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
     public void itemClicked(GalleryItem item) {
         mPickerPresenter.clickGalleryItem(item);
     }
-
-
-//    private void goToImageEdit(GalleryItem item) {
-//        BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inJustDecodeBounds = true;
-//        BitmapFactory.decodeFile(item.path, options);
-//
-//        int rotation = 0;
-//        try {
-//            ExifInterface exif = new ExifInterface(item.path);
-//            rotation = getRotation(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        Dimens dimens = new Dimens(options.outWidth, options.outHeight);
-//        dimens.setRotation(rotation);
-//        if(mPostOptions == null){
-//            mPostOptions = new PostOptions();
-//        }
-//        mPostOptions.type = PostOptions.ContentType.UploadedPhoto;
-//
-//        goToFragment(
-//                EditFragment.newInstance(Uri.parse(item.path), mReturnType, dimens, mPostOptions),
-//                EditFragment.TAG
-//        );
-//    }
-
-//    private int getRotation(int exif){
-//        switch (exif){
-//            case ExifInterface.ORIENTATION_NORMAL:
-//                return 0;
-//            case ExifInterface.ORIENTATION_ROTATE_90:
-//                return 90;
-//            case ExifInterface.ORIENTATION_ROTATE_180:
-//                return 180;
-//            case ExifInterface.ORIENTATION_ROTATE_270:
-//                return 270;
-//            default:
-//                return 0;
-//        }
-//    }
 
 
     @Override

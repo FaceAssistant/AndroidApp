@@ -1,6 +1,7 @@
 package faceassist.faceassist.Components.Fragments.FacialRec;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
 
@@ -18,7 +19,7 @@ public class FacialRecContract {
         void showToast(String message);
         void showAlert(@StringRes int title, @StringRes int message);
         void setSubmitButtonImage(@DrawableRes int image);
-        void faceCropped(Bitmap bitmap);
+        void faceCropped(Uri uri);
     }
 
     public interface Presenter extends FaceDetectionImageView.FaceDetectionListener{
