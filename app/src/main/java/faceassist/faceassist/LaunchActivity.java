@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
 import faceassist.faceassist.Components.Activities.Camera.FacialResultActivity;
+import faceassist.faceassist.Login.LoginActivity;
 
 /**
  * Created by QiFeng on 1/30/17.
@@ -22,6 +23,7 @@ public class LaunchActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        UserInfo.init(getSharedPreferences(UserInfoConstants.DEF_PREF, MODE_PRIVATE));
     }
 
 
@@ -29,8 +31,10 @@ public class LaunchActivity extends AppCompatActivity {
     protected void onPostResume() {
         super.onPostResume();
 
-        //start next activity
-        Intent i = new Intent(LaunchActivity.this, FacialResultActivity.class);
+        UserInfo info = UserInfo.getInstance();
+        Class nextActivity = FacialResultActivity.class; //info.isLoggedIn() ? FacialResultActivity.class : LoginActivity.class;
+
+        Intent i = new Intent(LaunchActivity.this, nextActivity);
         startActivity(i);
         finish();
     }
