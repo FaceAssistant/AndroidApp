@@ -281,7 +281,9 @@ public class CameraPresenter implements CameraContract.Presenter {
 
         // Nulls out callbacks, stops face detection
         textureView.setCamera(null);
-        mCamera.stopPreview();
+
+        if (mCamera != null)
+            mCamera.stopPreview();
     }
 
     @Override

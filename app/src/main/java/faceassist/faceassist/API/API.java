@@ -4,6 +4,8 @@ package faceassist.faceassist.API;
  * Created by QiFeng on 2/6/17.
  */
 
+import android.util.Log;
+
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -28,8 +30,8 @@ public class API {
 
 
     // API ENDPOINT URL
-    private static final String SCHEME = "http";
-    private static final String HOST_LIVE = "34.199.64.11/api";
+    private static final String SCHEME = "https";
+    private static final String HOST_LIVE = "faceassist.us/api";
     private static final String VERSION_LIVE = "v1";
 
 
@@ -85,6 +87,7 @@ public class API {
         OkHttpClient client = new OkHttpClient();
         Headers requestHeaders = Headers.of(headers);   //add headers
         String url = getURL(path);
+        //Log.d(TAG, "post: "+url);
         Call call = client.newCall(new Request.Builder().url(url).headers(requestHeaders).post(body).build());
         call.enqueue(callback);
         return call;
@@ -141,8 +144,9 @@ public class API {
     }
 
 
-    public static HashMap<String, String> getMainHeader() {
+    public static HashMap<String, String> getMainHeader(String token) {
         HashMap<String, String> header = new HashMap<>();
+        header.put("Authorization", token);
         header.put("Content-Type", CONTENT_TYPE);
         return header;
     }

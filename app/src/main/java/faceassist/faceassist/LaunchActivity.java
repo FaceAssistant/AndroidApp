@@ -32,7 +32,7 @@ public class LaunchActivity extends AppCompatActivity {
         super.onPostResume();
 
         UserInfo info = UserInfo.getInstance();
-        Class nextActivity = FacialResultActivity.class; //info.isLoggedIn() ? FacialResultActivity.class : LoginActivity.class;
+        Class nextActivity = info.isLoggedIn() ? FacialResultActivity.class : LoginActivity.class;
 
         Intent i = new Intent(LaunchActivity.this, nextActivity);
         startActivity(i);

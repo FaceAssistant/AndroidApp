@@ -217,7 +217,6 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
 
         if (mPickerPresenter != null) {
             mPickerPresenter.stop();
-            mPickerPresenter = null;
         }
 
         if (mAlertDialog != null) {

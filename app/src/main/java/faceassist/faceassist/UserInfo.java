@@ -21,17 +21,19 @@ public class UserInfo {
     }
 
 
-    public static void updateUserInfo(SharedPreferences preferences, String token, String email, String name){
+    public static void updateUserInfo(SharedPreferences preferences, String token, String email, String firstName, String lastName){
         if (mUserInfoSingleton != null){
             mUserInfoSingleton.mToken = token;
             mUserInfoSingleton.mEmail = email;
-            mUserInfoSingleton.mFullName = name;
+            mUserInfoSingleton.mFirstName = firstName;
+            mUserInfoSingleton.mLastName = lastName;
         }
 
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(UserInfoConstants.TOKEN, token);
         editor.putString(UserInfoConstants.EMAIL, email);
-        editor.putString(UserInfoConstants.NAME, name);
+        editor.putString(UserInfoConstants.FIRST_NAME, firstName);
+        editor.putString(UserInfoConstants.LAST_NAME, lastName);
         editor.apply();
 
 
@@ -39,19 +41,20 @@ public class UserInfo {
 
     public static void clean(SharedPreferences preferences){
         mUserInfoSingleton = null;
-        updateUserInfo(preferences, null, null, null);
+        updateUserInfo(preferences, null, null, null, null);
     }
 
 
     private String mToken = null;
     private String mEmail = null;
-    private String mFullName = null;
+    private String mFirstName = null;
+    private String mLastName = null;
 
     private UserInfo(SharedPreferences preferences){
         mToken = preferences.getString(UserInfoConstants.TOKEN, null);
         mEmail = preferences.getString(UserInfoConstants.EMAIL, null);
-        mFullName = preferences.getString(UserInfoConstants.NAME, null);
-
+        mFirstName = preferences.getString(UserInfoConstants.FIRST_NAME, null);
+        mLastName = preferences.getString(UserInfoConstants.LAST_NAME, null);
     }
 
 
@@ -68,7 +71,11 @@ public class UserInfo {
         return mEmail;
     }
 
-    public String getFullName() {
-        return mFullName;
+    public String getFirstName() {
+        return mFirstName;
+    }
+
+    public String getLastName(){
+        return mLastName;
     }
 }
