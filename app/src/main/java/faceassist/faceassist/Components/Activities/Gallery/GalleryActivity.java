@@ -16,9 +16,11 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecFragment;
+import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecPresenter;
 import faceassist.faceassist.Components.Fragments.NeedPermissions.NeedPermissionFragment;
 import faceassist.faceassist.Components.Fragments.Picker.Models.GalleryItem;
 import faceassist.faceassist.Components.Fragments.Picker.PickerFragment;
+import faceassist.faceassist.Components.Fragments.Picker.PickerPresenter;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.OnFinished;
@@ -68,8 +70,10 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
     }
 
     private void addPickerFragment() {
+        PickerFragment fragment = PickerFragment.newInstance();
+        new PickerPresenter(fragment, fragment.getLoader(), fragment.getLoaderManager());
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, PickerFragment.newInstance())
+                .replace(R.id.fragment_container, fragment)
                 .commit();
     }
 
@@ -123,8 +127,11 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
 
     @Override
     public void onGalleryItemSelected(GalleryItem item) {
+        FacialRecFragment fragment = FacialRecFragment.newInstance(item.uri);
+        new FacialRecPresenter(fragment);
+
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, FacialRecFragment.newInstance(item.uri))
+                .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
     }

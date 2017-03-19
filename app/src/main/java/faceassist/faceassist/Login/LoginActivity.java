@@ -75,11 +75,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         if (res.isSuccess()){
             GoogleSignInAccount account = res.getSignInAccount();
 
-            try{
+            if(account != null){
                 Log.i(TAG, "handleResult: "+account.getIdToken());
                 Log.i(TAG, "handleResult: "+account.getEmail());
-            }catch (NullPointerException e){
-                Toast.makeText(this, "Error retrieving token", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(this, "Error retrieving account", Toast.LENGTH_SHORT).show();
             }
 
 

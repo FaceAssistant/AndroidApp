@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "850880049972",
+    "project_id": "firebase-faceassist"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:850880049972:android:9d0ef6ca8cbb998b",
+        "android_client_info": {
+          "package_name": "faceassist.faceassist"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "850880049972-buq09st92nft3r6sc47tjtias905m3h7.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "850880049972-q2hkmu8bfiabqi7akbsg404bk96t8ac2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "faceassist.faceassist",
+            "certificate_hash": "cb245208c6d9078339e65dba4c1b3597cac8af81"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpEUL31nC6j1sibneearIKIQtCd35L2Zw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

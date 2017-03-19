@@ -50,11 +50,13 @@ public class CameraPresenter implements CameraContract.Presenter {
     private OrientationHelper mRotationHelper;
 
 
-    CameraPresenter(CameraContract.View cameraView, BitmapSaver bitmapSaver, OrientationHelper rotationHelper) {
+    public CameraPresenter(CameraContract.View cameraView, BitmapSaver bitmapSaver, OrientationHelper rotationHelper) {
         mTakePictureHandler = new Handler(Looper.getMainLooper());
         mCameraView = cameraView;
         mBitmapSaver = bitmapSaver;
         mRotationHelper = rotationHelper;
+
+        cameraView.setPresenter(this);
     }
 
     /**

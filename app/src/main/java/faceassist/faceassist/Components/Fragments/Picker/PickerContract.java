@@ -18,6 +18,7 @@ public class PickerContract {
         void showUpdatedGallery(List<GalleryItem> galleryItems);
         void runClickedItem(GalleryItem item);
         void showErrorToast();
+        void setPresenter(PickerPresenter presenter);
     }
 
     public interface Presenter{

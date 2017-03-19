@@ -146,11 +146,10 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
 
         vRecyclerView.setAdapter(mPickerAdapter);
 
-        if (mPickerPresenter == null) {
-            mPickerPresenter = new PickerPresenter(this, getLoader(), getLoaderManager());
+        //if (mPickerPresenter != null) {
             mPickerPresenter.setUnfilteredGalleryItems(mUnfilteredGalleryItems);
             mPickerPresenter.start();
-        }
+        //}
 
         return rootView;
     }
@@ -207,7 +206,12 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
         }
     }
 
-    private Loader<Cursor> getLoader(){
+    @Override
+    public void setPresenter(PickerPresenter presenter) {
+        mPickerPresenter = presenter;
+    }
+
+    public Loader<Cursor> getLoader(){
         return new CursorLoader(
                 getContext(),
                 queryUri,

@@ -27,10 +27,11 @@ public class PickerPresenter implements PickerContract.Presenter, LoaderManager.
     private PickerContract.View mPickerView;
     private List<GalleryItem> mUnfilteredGalleryItems;
 
-    PickerPresenter(PickerContract.View view, Loader<Cursor> cursorLoader, LoaderManager loaderManager) {
+    public PickerPresenter(PickerContract.View view, Loader<Cursor> cursorLoader, LoaderManager loaderManager) {
         mPickerView = view;
         mCursorLoader = cursorLoader;
         mLoaderManager = loaderManager;
+        view.setPresenter(this);
     }
 
     @Override

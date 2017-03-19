@@ -14,6 +14,7 @@ public class CameraContract {
 
     public interface View{
         void onImageTaken(Uri image);
+        void setPresenter(CameraPresenter presenter);
     }
 
 

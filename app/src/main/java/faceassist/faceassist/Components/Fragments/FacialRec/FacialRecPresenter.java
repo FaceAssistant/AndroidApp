@@ -29,6 +29,7 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
 
     public FacialRecPresenter(FacialRecContract.View view){
         mFacialRecView = view;
+        mFacialRecView.setPresenter(this);
     }
 
     @Override

@@ -20,6 +20,7 @@ public class FacialRecContract {
         void showAlert(@StringRes int title, @StringRes int message);
         void setSubmitButtonImage(@DrawableRes int image);
         void faceCropped(Uri uri);
+        void setPresenter(FacialRecPresenter presenter);
     }
 
     public interface Presenter extends FaceDetectionImageView.FaceDetectionListener{

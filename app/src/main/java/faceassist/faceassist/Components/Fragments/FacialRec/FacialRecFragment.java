@@ -83,7 +83,6 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
         vConfirmButton = (FloatingActionButton) root.findViewById(R.id.confirm_button);
         vImageView = (FaceDetectionImageView) root.findViewById(R.id.image_view);
 
-        mFacialRecPresenter = new FacialRecPresenter(this);
         vImageView.setFaceDetectionListener(mFacialRecPresenter);
 
         vToolbar = (Toolbar) root.findViewById(R.id.toolbar);
@@ -103,6 +102,12 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
         });
 
         return root;
+    }
+
+
+    @Override
+    public void setPresenter(FacialRecPresenter presenter){
+        mFacialRecPresenter = presenter;
     }
 
 

@@ -28,7 +28,9 @@ import java.util.HashMap;
 import faceassist.faceassist.API.API;
 import faceassist.faceassist.Components.Activities.AddFace.AddFaceActivity;
 import faceassist.faceassist.Components.Fragments.Camera.CameraFragment;
+import faceassist.faceassist.Components.Fragments.Camera.CameraPresenter;
 import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecFragment;
+import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecPresenter;
 import faceassist.faceassist.Components.Fragments.NeedPermissions.NeedPermissionFragment;
 import faceassist.faceassist.Components.Activities.Profile.Profile;
 import faceassist.faceassist.Components.Activities.Profile.ProfileActivity;
@@ -68,8 +70,11 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
         //clearBackStack();
         checkPermissions();
 
-        if (savedInstanceState == null && mHasCameraPermission)
-            launchFragment(CameraFragment.newInstance(R.drawable.ic_action_menu), CameraFragment.TAG);
+        if (savedInstanceState == null && mHasCameraPermission) {
+            CameraFragment fragment = CameraFragment.newInstance(R.drawable.ic_action_menu);
+            new CameraPresenter(fragment, fragment, fragment);
+            launchFragment(fragment, CameraFragment.TAG);
+        }
 
     }
 
@@ -79,9 +84,11 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
         super.onResume();
         if (mReceivedRequestPermissionResults) { //only runs if we have updated permissions information
             clearBackStack(); //clears gallery or camera fragment
-            if (mHasCameraPermission)
-                launchFragment(CameraFragment.newInstance(R.drawable.ic_action_menu), CameraFragment.TAG);
-            else
+            if (mHasCameraPermission) {
+                CameraFragment fragment = CameraFragment.newInstance(R.drawable.ic_action_menu);
+                new CameraPresenter(fragment, fragment, fragment);
+                launchFragment(fragment, CameraFragment.TAG);
+            } else
                 launchFragment(NeedPermissionFragment.newInstance(R.string.camera_perm_title, R.string.camera_perm_text),
                         NeedPermissionFragment.TAG);
 
@@ -148,7 +155,9 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
     //input is the uri of image
     @Override
     public void onImageTaken(Uri image) {
-        addFragment(FacialRecFragment.newInstance(image), FacialRecFragment.TAG);
+        FacialRecFragment facialRecFragment = FacialRecFragment.newInstance(image);
+        new FacialRecPresenter(facialRecFragment);
+        addFragment(facialRecFragment, FacialRecFragment.TAG);
     }
 
     //check permissions
@@ -156,8 +165,11 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
     public void onCheckPermissionClicked() {
         //check for camera
         checkPermissions();
-        if (mHasCameraPermission)
-            launchFragment(CameraFragment.newInstance(R.drawable.ic_action_menu), CameraFragment.TAG);
+        if (mHasCameraPermission) {
+            CameraFragment fragment = CameraFragment.newInstance(R.drawable.ic_action_menu);
+            new CameraPresenter(fragment, fragment, fragment);
+            launchFragment(fragment, CameraFragment.TAG);
+        }
 
     }
 

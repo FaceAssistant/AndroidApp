@@ -77,8 +77,6 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_camera, container, false);
 
-        mCameraPresenter = new CameraPresenter(this, this, this);
-
         mCameraTextureView = (CameraTextureView) root.findViewById(R.id.texture);
         mCameraTextureView.setSurfaceTextureListener(this);
 
@@ -202,6 +200,11 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
     @Override
     public void onImageTaken(Uri image) {
         mOnImageTaken.onImageTaken(image);
+    }
+
+    @Override
+    public void setPresenter(CameraPresenter presenter) {
+        mCameraPresenter = presenter;
     }
 
     @Override
