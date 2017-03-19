@@ -322,6 +322,13 @@ public class FaceDetectionImageView extends SquareFrameLayout implements FaceVie
         mCropable = cropable;
     }
 
+
+    public boolean isCropable(){
+        return mCropable;
+    }
+
+
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (mCropable)

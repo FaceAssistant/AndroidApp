@@ -3,13 +3,17 @@ package faceassist.faceassist.Components.Activities.Gallery;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 
 import java.io.IOException;
@@ -71,10 +75,22 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
 
     private void addPickerFragment() {
         PickerFragment fragment = PickerFragment.newInstance();
-        new PickerPresenter(fragment, fragment.getLoader(), fragment.getLoaderManager());
+        new PickerPresenter(fragment, getLoader(), getSupportLoaderManager());
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .commit();
+    }
+
+
+    public Loader<Cursor> getLoader(){
+        return new CursorLoader(
+                this,
+                PickerFragment.QUERY_URI,
+                PickerFragment.PROJECTION,
+                PickerFragment.SELECTION,
+                null, // Selection args (none).
+                MediaStore.Files.FileColumns.DATE_ADDED + " DESC" // Sort order.
+        );
     }
 
 

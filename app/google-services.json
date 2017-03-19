@@ -13,21 +13,21 @@
       },
       "oauth_client": [
         {
-          "client_id": "850880049972-buq09st92nft3r6sc47tjtias905m3h7.apps.googleusercontent.com",
-          "client_type": 3
-        },
-        {
-          "client_id": "850880049972-q2hkmu8bfiabqi7akbsg404bk96t8ac2.apps.googleusercontent.com",
+          "client_id": "850880049972-2sbv83gqq3rmkhk0g2l8mn3ksgfm18hv.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "faceassist.faceassist",
-            "certificate_hash": "cb245208c6d9078339e65dba4c1b3597cac8af81"
+            "certificate_hash": "e2b57a4805f81e6bd9980b6beadc86debcc27455"
           }
+        },
+        {
+          "client_id": "850880049972-emo9tr44ajo4c32sbedic5papt355rpk.apps.googleusercontent.com",
+          "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDpEUL31nC6j1sibneearIKIQtCd35L2Zw"
+          "current_key": "AIzaSyDDFJmVzzr0jThiKL8ZOC1VrBJNJk1PK7Q"
         }
       ],
       "services": {

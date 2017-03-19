@@ -78,12 +78,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if(account != null){
                 Log.i(TAG, "handleResult: "+account.getIdToken());
                 Log.i(TAG, "handleResult: "+account.getEmail());
+                Toast.makeText(this, account.getIdToken(), Toast.LENGTH_LONG).show();
             }else{
                 Toast.makeText(this, "Error retrieving account", Toast.LENGTH_SHORT).show();
             }
 
 
         }else {
+            Toast.makeText(this," BAD ",Toast.LENGTH_SHORT).show();
             Log.e(TAG, "handleResult: bad result "+res.getStatus());
         }
     }

@@ -1,15 +1,12 @@
 package faceassist.faceassist.Components.Fragments.Picker;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.GridLayoutManager;
@@ -63,7 +60,7 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
 
 
 
-    private static final String[] mProjection = {
+    public static final String[] PROJECTION = {
             MediaStore.Files.FileColumns._ID,
             MediaStore.Files.FileColumns.DATA,
             MediaStore.Files.FileColumns.MEDIA_TYPE,
@@ -71,10 +68,10 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
             MediaStore.Images.ImageColumns.BUCKET_ID
     };
 
-    private static final String selection = MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+    public static final String SELECTION = MediaStore.Files.FileColumns.MEDIA_TYPE + "="
             + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
-    private static final Uri queryUri = MediaStore.Files.getContentUri("external");
+    public static final Uri QUERY_URI = MediaStore.Files.getContentUri("external");
 
 
     public PickerFragment() {
@@ -146,10 +143,10 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
 
         vRecyclerView.setAdapter(mPickerAdapter);
 
-        //if (mPickerPresenter != null) {
+        if (mPickerPresenter != null) {
             mPickerPresenter.setUnfilteredGalleryItems(mUnfilteredGalleryItems);
             mPickerPresenter.start();
-        //}
+        }
 
         return rootView;
     }
@@ -209,17 +206,6 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
     @Override
     public void setPresenter(PickerPresenter presenter) {
         mPickerPresenter = presenter;
-    }
-
-    public Loader<Cursor> getLoader(){
-        return new CursorLoader(
-                getContext(),
-                queryUri,
-                mProjection,
-                selection,
-                null, // Selection args (none).
-                MediaStore.Files.FileColumns.DATE_ADDED + " DESC" // Sort order.
-        );
     }
 
 

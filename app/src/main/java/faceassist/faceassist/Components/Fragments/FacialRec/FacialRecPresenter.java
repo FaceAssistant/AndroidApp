@@ -2,6 +2,7 @@ package faceassist.faceassist.Components.Fragments.FacialRec;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.util.Log;
 
 import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.CustomFace;
 import faceassist.faceassist.Components.Fragments.FacialRec.ImageView.FaceDetectionErrors;
@@ -23,7 +24,6 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
 
     private FacialRecContract.View mFacialRecView;
     private Subscription mCropSubscription;
-    private boolean mCroppingDone = false;
     private boolean mBitmapLoaded = false;
 
 
@@ -35,12 +35,13 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
     @Override
     public void clickedSubmit(FaceDetectionImageView imageView) {
         if (!mBitmapLoaded) return;
-        if (mCroppingDone) {
+        if (!imageView.isCropable()) {
             if (imageView.getSelectedFace() == null) {
                 mFacialRecView.showToast("Select a face");
                 return;
             }
 
+            Log.i("TEST", "clickedSubmit: 0");
             mFacialRecView.showProgress(true);
 
             if (mCropSubscription != null) mCropSubscription.unsubscribe();
@@ -51,6 +52,7 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
                         @Override
                         public void call(Uri uri) {
                             if (uri != null) {
+                                Log.i("TEST", "clickedSubmit: 1");
                                 mFacialRecView.faceCropped(uri);
                                 //Log.i(TAG, "call: cropped");
                             } else {
@@ -66,8 +68,6 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
 
     @Override
     public void detectFaces(FaceDetectionImageView imageView) {
-        mCroppingDone = true;
-
         imageView.setCropable(false);
         imageView.updateFaces();
     }
@@ -78,7 +78,7 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
         if (cachedBitmap != null) {
             CustomFace face = imageView.getSelectedFace().getFace();
             Bitmap map = Bitmap.createBitmap(cachedBitmap, face.x, face.y, face.getWidth(), face.getHeight());
-            ImageUtils.savePictureToCache(imageView.getContext(), map);
+            return Uri.fromFile(ImageUtils.savePictureToCache(imageView.getContext(), map));
         }
 
         return null;
