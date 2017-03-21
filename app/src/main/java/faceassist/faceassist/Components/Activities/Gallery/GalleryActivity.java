@@ -15,6 +15,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -23,11 +24,13 @@ import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecFragment;
 import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecPresenter;
 import faceassist.faceassist.Components.Fragments.NeedPermissions.NeedPermissionFragment;
 import faceassist.faceassist.Components.Fragments.Picker.Models.GalleryItem;
+import faceassist.faceassist.Components.Fragments.Picker.PickerConstants;
 import faceassist.faceassist.Components.Fragments.Picker.PickerFragment;
 import faceassist.faceassist.Components.Fragments.Picker.PickerPresenter;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.OnFinished;
+import faceassist.faceassist.Utils.OnNavigationIconClicked;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
@@ -36,11 +39,9 @@ import static rx.android.schedulers.AndroidSchedulers.mainThread;
 import static rx.schedulers.Schedulers.io;
 
 public class GalleryActivity extends AppCompatActivity implements NeedPermissionFragment.OnCheckPermissionClicked,
-        PickerFragment.OnGalleryItemSelected, FacialRecFragment.OnFaceResult {
+        PickerFragment.OnGalleryItemSelected, FacialRecFragment.OnFaceResult{
 
     public static final String TAG = GalleryActivity.class.getSimpleName();
-
-    public static final String URI_KEY = "uri_key";
 
     public static final int REQ_READ_EXT_STORAGE = 52;
 
@@ -85,11 +86,11 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
     public Loader<Cursor> getLoader(){
         return new CursorLoader(
                 this,
-                PickerFragment.QUERY_URI,
-                PickerFragment.PROJECTION,
-                PickerFragment.SELECTION,
+                PickerConstants.QUERY_URI,
+                PickerConstants.PROJECTION,
+                PickerConstants.SELECTION,
                 null, // Selection args (none).
-                MediaStore.Files.FileColumns.DATE_ADDED + " DESC" // Sort order.
+                PickerConstants.SORT_BY
         );
     }
 
@@ -157,7 +158,8 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
 
         final WeakReference<OnFinished> mOnFinishedWeakReference = new WeakReference<>(onFinished);
 
-        mScaleSubscription = Observable.just(scaleBitmap(uri))
+        if (mScaleSubscription != null) mScaleSubscription.unsubscribe();
+        mScaleSubscription = Observable.just(ImageUtils.scaleBitmap(this,uri))
                 .subscribeOn(io())
                 .observeOn(mainThread())
                 .subscribe(new Action1<Uri>() {
@@ -169,7 +171,7 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
 
                         if (uri != null) {
                             Intent i = getIntent();
-                            i.putExtra(URI_KEY, uri);
+                            i.setData(uri);
                             setResult(RESULT_OK, i);
                             finish();
                         }
@@ -177,29 +179,6 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
                 });
     }
 
-
-
-    private Uri scaleBitmap(Uri uri){
-
-        try {
-            Bitmap bitmap = ImageUtils.decodeUri(this, uri, 100);
-
-            Bitmap scaled;
-
-            if (bitmap.getWidth() > bitmap.getHeight()) {
-                scaled = Bitmap.createScaledBitmap(bitmap, (int) (bitmap.getWidth() * 100f / bitmap.getHeight()), 100, true);
-            } else {
-                scaled = Bitmap.createScaledBitmap(bitmap, 100, (int) (bitmap.getHeight() * 100f / bitmap.getWidth()), true);
-            }
-
-            if (scaled != bitmap) bitmap.recycle();
-
-            return Uri.fromFile(ImageUtils.savePictureToCache(this, scaled).getAbsoluteFile());
-        }catch (IOException e){
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     @Override
     protected void onStop() {
@@ -211,4 +190,5 @@ public class GalleryActivity extends AppCompatActivity implements NeedPermission
     public void onSearchStopped() {
 
     }
+
 }

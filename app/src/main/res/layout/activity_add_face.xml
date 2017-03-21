@@ -4,7 +4,6 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:background="@color/colorLightPrimary"
-
               android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
@@ -17,6 +16,18 @@
         app:titleTextColor="@color/pureWhite"
     />
 
+
+    <ViewSwitcher
+        android:id="@+id/viewSwitcher"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include layout="@layout/activity_add_face_text"/>
+        <include layout="@layout/activity_add_pictures"/>
+
+    </ViewSwitcher>
+
+
     <ProgressBar
         android:id="@+id/progress"
         style="?android:progressBarStyleLarge"
@@ -25,10 +36,5 @@
         android:layout_gravity="center"
         android:layout_marginTop="64dp"
         android:visibility="gone"/>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
 
 </LinearLayout>

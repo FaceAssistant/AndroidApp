@@ -21,12 +21,14 @@ public class UserInfo {
     }
 
 
-    public static void updateUserInfo(SharedPreferences preferences, String token, String email, String firstName, String lastName){
+    public static void updateUserInfo(SharedPreferences preferences, String token, String email, String firstName,
+                                      String lastName){
         if (mUserInfoSingleton != null){
             mUserInfoSingleton.mToken = token;
             mUserInfoSingleton.mEmail = email;
             mUserInfoSingleton.mFirstName = firstName;
             mUserInfoSingleton.mLastName = lastName;
+            //mUserInfoSingleton.mPhotoUrl = photouUrl;
         }
 
         SharedPreferences.Editor editor = preferences.edit();
@@ -34,6 +36,7 @@ public class UserInfo {
         editor.putString(UserInfoConstants.EMAIL, email);
         editor.putString(UserInfoConstants.FIRST_NAME, firstName);
         editor.putString(UserInfoConstants.LAST_NAME, lastName);
+        //editor.putString(UserInfoConstants.PROFILE_URL, photouUrl);
         editor.apply();
 
 
@@ -49,12 +52,14 @@ public class UserInfo {
     private String mEmail = null;
     private String mFirstName = null;
     private String mLastName = null;
+    //private String mPhotoUrl = null;
 
     private UserInfo(SharedPreferences preferences){
         mToken = preferences.getString(UserInfoConstants.TOKEN, null);
         mEmail = preferences.getString(UserInfoConstants.EMAIL, null);
         mFirstName = preferences.getString(UserInfoConstants.FIRST_NAME, null);
         mLastName = preferences.getString(UserInfoConstants.LAST_NAME, null);
+        //mPhotoUrl = preferences.getString(UserInfoConstants.PROFILE_URL, null);
     }
 
 
@@ -78,4 +83,8 @@ public class UserInfo {
     public String getLastName(){
         return mLastName;
     }
+
+//    public String getPhotoUrl(){
+//        return mPhotoUrl;
+//    }
 }

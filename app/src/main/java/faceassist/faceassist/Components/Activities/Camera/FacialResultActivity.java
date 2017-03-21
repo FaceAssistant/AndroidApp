@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -27,16 +28,19 @@ import java.util.HashMap;
 
 import faceassist.faceassist.API.API;
 import faceassist.faceassist.Components.Activities.AddFace.AddFaceActivity;
+import faceassist.faceassist.Components.Activities.Profile.BaseProfile;
 import faceassist.faceassist.Components.Fragments.Camera.CameraFragment;
 import faceassist.faceassist.Components.Fragments.Camera.CameraPresenter;
 import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecFragment;
 import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecPresenter;
 import faceassist.faceassist.Components.Fragments.NeedPermissions.NeedPermissionFragment;
-import faceassist.faceassist.Components.Activities.Profile.Profile;
+import faceassist.faceassist.Components.Activities.Profile.LovedOneProfile;
 import faceassist.faceassist.Components.Activities.Profile.ProfileActivity;
 import faceassist.faceassist.R;
+import faceassist.faceassist.UserInfo;
 import faceassist.faceassist.Utils.FileUtils;
 import faceassist.faceassist.Utils.OnFinished;
+import faceassist.faceassist.Utils.OnNavigationIconClicked;
 import faceassist.faceassist.Utils.PermissionUtils;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -44,7 +48,7 @@ import okhttp3.Response;
 
 public class FacialResultActivity extends AppCompatActivity implements CameraFragment.OnImageTaken,
         NeedPermissionFragment.OnCheckPermissionClicked, FacialRecFragment.OnFaceResult,
-        NavigationView.OnNavigationItemSelectedListener{
+        NavigationView.OnNavigationItemSelectedListener, OnNavigationIconClicked{
 
     public static final String TAG = FacialResultActivity.class.getSimpleName();
     private static final String CAMERA_FRAGS = "camera_fragments";
@@ -72,6 +76,7 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
 
         if (savedInstanceState == null && mHasCameraPermission) {
             CameraFragment fragment = CameraFragment.newInstance(R.drawable.ic_action_menu);
+            fragment.setOnNavigationIconClicked(this);
             new CameraPresenter(fragment, fragment, fragment);
             launchFragment(fragment, CameraFragment.TAG);
         }
@@ -86,6 +91,7 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
             clearBackStack(); //clears gallery or camera fragment
             if (mHasCameraPermission) {
                 CameraFragment fragment = CameraFragment.newInstance(R.drawable.ic_action_menu);
+                fragment.setOnNavigationIconClicked(this);
                 new CameraPresenter(fragment, fragment, fragment);
                 launchFragment(fragment, CameraFragment.TAG);
             } else
@@ -167,6 +173,7 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
         checkPermissions();
         if (mHasCameraPermission) {
             CameraFragment fragment = CameraFragment.newInstance(R.drawable.ic_action_menu);
+            fragment.setOnNavigationIconClicked(this);
             new CameraPresenter(fragment, fragment, fragment);
             launchFragment(fragment, CameraFragment.TAG);
         }
@@ -177,6 +184,8 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
     @Override
     public void onFaceResult(Uri uri, OnFinished onFinished) {
 
+        Log.d(TAG, "onResponse: "+UserInfo.getInstance().getToken());
+
         try {
             HashMap<String, Object> params = new HashMap<>();
             params.put("image", FileUtils.encodeFileBase64(new File(uri.getPath())));
@@ -185,18 +194,19 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
 
             if (mFacialSearch != null) mFacialSearch.cancel();
 
-            mFacialSearch = API.post(new String[]{"face", "recognize"},
-                    new HashMap<String, String>(),
+            mFacialSearch = API.post(new String[]{"face", "infer"},
+                    API.getMainHeader(UserInfo.getInstance().getToken()),
                     params,
                     new Callback() {
 
                         @Override
                         public void onFailure(Call call, IOException e) {
                             if (call.isCanceled()) return;
+                            e.printStackTrace();
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(FacialResultActivity.this, "Failed to get response from server", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(FacialResultActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
                                     if (mOnFinishedWeakReference.get() != null)
                                         mOnFinishedWeakReference.get().onFinished();
                                 }
@@ -207,10 +217,29 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                         public void onResponse(Call call, Response response) throws IOException {
                             if (response.isSuccessful()) {
                                 try {
+                                    String header = response.header("Person-Type", null);
+                                    if (header == null){
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(FacialResultActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
+                                                if (mOnFinishedWeakReference.get() != null)
+                                                    mOnFinishedWeakReference.get().onFinished();
+                                            }
+                                        });
+                                        return;
+                                    }
+
                                     JSONObject obj = new JSONObject(response.body().string());
+
                                     Log.d(TAG, "onResponse: " + obj.toString(4));
 
-                                    final Profile profile = new Profile(obj);
+                                    final BaseProfile profile;
+                                    if (header.equals(BaseProfile.TYPE_CELEB)){
+                                        profile = new BaseProfile(obj);
+                                    }else{
+                                        profile = new LovedOneProfile(obj);
+                                    }
 
                                     runOnUiThread(new Runnable() {
                                         @Override
@@ -229,7 +258,7 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            Toast.makeText(FacialResultActivity.this, "Error parsing", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(FacialResultActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
                                             if (mOnFinishedWeakReference.get() != null)
                                                 mOnFinishedWeakReference.get().onFinished();
                                         }
@@ -240,12 +269,13 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast.makeText(FacialResultActivity.this, "Bad response", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(FacialResultActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
                                         if (mOnFinishedWeakReference.get() != null)
                                             mOnFinishedWeakReference.get().onFinished();
                                     }
                                 });
-                                Log.d(TAG, "onResponse: " + response.code() + " " + response.message());
+
+                                Log.d(TAG, "onResponse: " + response.code() + " " + response.body().toString());
                             }
                         }
                     });
@@ -297,8 +327,18 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
     }
 
 
+
     @Override
     public void onBackPressed() {
+        if (mDrawerLayout.isDrawerOpen(mNavigationView)){
+            mDrawerLayout.closeDrawers();
+        }else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public void onNavIconClicked(View v) {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0){
             super.onBackPressed();
         }else {

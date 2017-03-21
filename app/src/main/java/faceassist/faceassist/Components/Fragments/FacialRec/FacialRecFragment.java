@@ -136,12 +136,12 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
     }
 
     @Override
-    public void setToolbarTitle(String title) {
+    public void setToolbarTitle(@StringRes int title) {
         vToolbar.setTitle(title);
     }
 
     @Override
-    public void showToast(String message) {
+    public void showToast(@StringRes int message) {
         if (getActivity() != null)
             Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }

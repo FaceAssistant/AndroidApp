@@ -157,4 +157,28 @@ public class ImageUtils {
         else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {  return 270; }
         return 0;
     }
+
+
+    public static Uri scaleBitmap(Context context,Uri uri){
+        try {
+            Bitmap bitmap = ImageUtils.decodeUri(context, uri, 100);
+
+            Bitmap scaled;
+
+            if (bitmap.getWidth() > bitmap.getHeight()) {
+                scaled = Bitmap.createScaledBitmap(bitmap, (int) (bitmap.getWidth() * 100f / bitmap.getHeight()), 100, true);
+            } else {
+                scaled = Bitmap.createScaledBitmap(bitmap, 100, (int) (bitmap.getHeight() * 100f / bitmap.getWidth()), true);
+            }
+
+            if (scaled != bitmap) bitmap.recycle();
+
+            //// TODO: 3/20/17  change
+            return Uri.fromFile(ImageUtils.savePicture(context, scaled).getAbsoluteFile());
+        }catch (IOException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
+

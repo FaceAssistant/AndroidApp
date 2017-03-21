@@ -33,6 +33,22 @@
     <string name="cancel">Cancel</string>
     <string name="update">Update</string>
     <string name="connection_failed">Connection failed</string>
+    <string name="failed_connection">Failed to get response from server</string>
+    <string name="error_communicating_server">Error communicating with server</string>
+    <string name="error_detecting_face">Error detecting faces</string>
+    <string name="error_decoding_image">Error decoding image</string>
+    <string name="select_face">Select a face</string>
+    <string name="processing_image">Processing image…</string>
+    <string name="loading_image">Loading image…</string>
+    <string name="scale_crop">Scale and crop image</string>
+    <string name="error_cropping">Error cropping image</string>
+    <string name="name">Name</string>
+    <string name="relationship">Relationship</string>
+    <string name="next">Next</string>
+    <string name="notes">Notes</string>
+    <string name="submit">submit</string>
+    <string name="required_field">This field is required</string>
+    <string name="not_enough_images">Not enough image</string>
 
 
 </resources>

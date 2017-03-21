@@ -16,17 +16,25 @@ import faceassist.faceassist.R;
 public class ProfileActivity extends AppCompatActivity {
 
     public static final String ARG_PROFILE = "user_profile";
-    Profile mProfile;
-
+    BaseProfile mProfile;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
-
         mProfile = getIntent().getParcelableExtra(ARG_PROFILE);
+        int layout = mProfile instanceof LovedOneProfile ?
+                R.layout.activity_profile_loved_one :
+                R.layout.activity_profile;
+
+        setContentView(layout);
+
+        setUpToolbar();
+        setUpData();
+        setUpLovedOneData();
+    }
 
 
+    private void setUpToolbar(){
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -36,11 +44,23 @@ public class ProfileActivity extends AppCompatActivity {
         });
 
         toolbar.setTitle(mProfile.getName());
-
-        ((TextView)findViewById(R.id.name)).setText(mProfile.getName());
-        ((TextView)findViewById(R.id.confidence)).setText(String.valueOf(mProfile.getConfidence()));
-
     }
 
+    public void setUpData(){
+        ((TextView)findViewById(R.id.name)).setText(mProfile.getName());
+        ((TextView)findViewById(R.id.confidence)).setText(String.valueOf(mProfile.getConfidence()));
+    }
+
+    private void setUpLovedOneData(){
+
+        if (!(mProfile instanceof LovedOneProfile)) return;
+
+        LovedOneProfile lovedOneProfile = (LovedOneProfile) mProfile;
+
+        ((TextView) findViewById(R.id.relationship)).setText(lovedOneProfile.getRelationship());
+        //// TODO: 3/20/17 add last viewed
+        //((TextView) findViewById(R.id.last_viewed)).setText(lovedOneProfile.getRelationship());
+        ((TextView) findViewById(R.id.note)).setText(lovedOneProfile.getNote());
+    }
 
 }

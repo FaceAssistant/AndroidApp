@@ -10,17 +10,27 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import java.lang.ref.WeakReference;
+
 import faceassist.faceassist.Components.Fragments.Camera.CameraFragment;
 import faceassist.faceassist.Components.Fragments.Camera.CameraPresenter;
 import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecFragment;
 import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecPresenter;
 import faceassist.faceassist.Components.Fragments.NeedPermissions.NeedPermissionFragment;
 import faceassist.faceassist.R;
+import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.OnFinished;
 import faceassist.faceassist.Utils.PermissionUtils;
+import rx.Observable;
+import rx.Subscription;
+import rx.functions.Action1;
+
+import static rx.android.schedulers.AndroidSchedulers.mainThread;
+import static rx.schedulers.Schedulers.io;
 
 public class PictureUriActivity extends AppCompatActivity implements CameraFragment.OnImageTaken,
-        NeedPermissionFragment.OnCheckPermissionClicked, FacialRecFragment.OnFaceResult{
+        NeedPermissionFragment.OnCheckPermissionClicked, FacialRecFragment.OnFaceResult {
 
     public static final String TAG = PictureUriActivity.class.getSimpleName();
     private static final String CAMERA_FRAGS = "camera_fragments";
@@ -28,6 +38,8 @@ public class PictureUriActivity extends AppCompatActivity implements CameraFragm
     //using these two guys because permission results are returned before onResume
     protected boolean mHasCameraPermission = false;
     protected boolean mReceivedRequestPermissionResults = false;
+
+    private Subscription mScaleSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +66,7 @@ public class PictureUriActivity extends AppCompatActivity implements CameraFragm
                 CameraFragment fragment = CameraFragment.newInstance(R.drawable.ic_action_arrow_back);
                 new CameraPresenter(fragment, fragment, fragment);
                 launchFragment(fragment, CameraFragment.TAG);
-            }else
+            } else
                 launchFragment(NeedPermissionFragment.newInstance(R.string.camera_perm_title, R.string.camera_perm_text),
                         NeedPermissionFragment.TAG);
 
@@ -143,17 +155,27 @@ public class PictureUriActivity extends AppCompatActivity implements CameraFragm
     //when a face is selected
     @Override
     public void onFaceResult(Uri uri, OnFinished onFinished) {
-        onFinished.onFinished();
+        final WeakReference<OnFinished> mOnFinishedWeakReference = new WeakReference<>(onFinished);
 
-        if (uri != null) {
-            Intent intent = new Intent();
-            intent.setData(uri);
-            setResult(RESULT_OK, intent);
-        }else {
-            setResult(RESULT_CANCELED);
-        }
+        if (mScaleSubscription != null) mScaleSubscription.unsubscribe();
+        mScaleSubscription = Observable.just(ImageUtils.scaleBitmap(this, uri))
+                .subscribeOn(io())
+                .observeOn(mainThread())
+                .subscribe(new Action1<Uri>() {
+                    @Override
+                    public void call(Uri uri) {
+                        if (mOnFinishedWeakReference.get() != null) {
+                            mOnFinishedWeakReference.get().onFinished();
+                        }
 
-        finish();
+                        if (uri != null) {
+                            Intent i = getIntent();
+                            i.setData(uri);
+                            setResult(RESULT_OK, i);
+                            finish();
+                        }
+                    }
+                });
     }
 
     @Override
@@ -163,7 +185,7 @@ public class PictureUriActivity extends AppCompatActivity implements CameraFragm
 
     @Override
     public void onBackPressed() {
-        if (getSupportFragmentManager().getBackStackEntryCount() == 0){
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
             setResult(RESULT_CANCELED);
         }
 

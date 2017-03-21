@@ -15,8 +15,8 @@ public class FacialRecContract {
 
     public interface View{
         void showProgress(boolean show);
-        void setToolbarTitle(String title);
-        void showToast(String message);
+        void setToolbarTitle(@StringRes int title);
+        void showToast(@StringRes int message);
         void showAlert(@StringRes int title, @StringRes int message);
         void setSubmitButtonImage(@DrawableRes int image);
         void faceCropped(Uri uri);

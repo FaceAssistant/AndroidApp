@@ -1,13 +1,12 @@
 package faceassist.faceassist.Components.Activities.AddFace.RecyclerView;
 
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 
-import faceassist.faceassist.Components.Activities.AddFace.Models.ImageEntry;
 import faceassist.faceassist.R;
 
 /**
@@ -19,8 +18,8 @@ public class ImageEntryViewHolder extends RecyclerView.ViewHolder implements Vie
     public static final int REQUEST_CODE_BASE = 3245;
 
     private ImageView vImageView;
-    private ImageEntry mImageEntry;
     private OnImageClick mOnImageClick;
+    private Uri mImageUri;
 
     public ImageEntryViewHolder(View itemView, OnImageClick onImageClick) {
         super(itemView);
@@ -31,15 +30,12 @@ public class ImageEntryViewHolder extends RecyclerView.ViewHolder implements Vie
 
     }
 
-    public void bindView(ImageEntry entry){
-        mImageEntry = entry;
+    public void bindView(Uri imageUri){
+        mImageUri = imageUri;
 
         Glide.with(itemView.getContext())
-                .load(mImageEntry.getImageUri() == null ? R.drawable.ic_blank_profile_picture : mImageEntry.getImageUri())
+                .load(imageUri == null ? R.drawable.ic_blank_profile_picture : mImageUri)
                 .into(vImageView);
-
-        //todo errors
-
     }
 
     @Override

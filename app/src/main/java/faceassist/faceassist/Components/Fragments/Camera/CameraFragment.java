@@ -1,5 +1,6 @@
 package faceassist.faceassist.Components.Fragments.Camera;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -12,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.View;
@@ -21,15 +23,17 @@ import android.widget.CompoundButton;
 import java.io.File;
 
 import faceassist.faceassist.R;
+import faceassist.faceassist.Utils.Base.BaseFragment;
 import faceassist.faceassist.Utils.CameraUtils;
 import faceassist.faceassist.Utils.ImageUtils;
+import faceassist.faceassist.Utils.OnNavigationIconClicked;
 import faceassist.faceassist.Utils.PermissionUtils;
 
 /**
  * Created by QiFeng on 1/30/17.
  */
 
-public class CameraFragment extends Fragment implements TextureView.SurfaceTextureListener, CameraPresenter.OrientationHelper,
+public class CameraFragment extends BaseFragment implements TextureView.SurfaceTextureListener, CameraPresenter.OrientationHelper,
         CameraContract.View, CameraPresenter.BitmapSaver {
 
     public static final String TAG = CameraFragment.class.getSimpleName();
@@ -96,15 +100,12 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mCameraPresenter.safeToTakePictures() && getActivity() != null) {
-                    getActivity().onBackPressed();
-                }
+                onNavigationIconPressed(v);
             }
         });
 
         int icon = getArguments().getInt(ARGS_ICON, -1);
         toolbar.setNavigationIcon(icon == -1 ? R.drawable.ic_action_menu : icon);
-
 
         return root;
     }
@@ -129,7 +130,13 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
         //restartPreview() is called when camera preview surface is created
         //to prevent redundancy, only run this one if surfaceCreated() isn't called when fragment resumed
         if (mSurfaceAlreadyCreated && PermissionUtils.hasCameraPermission(getContext()) && !mCameraPresenter.hasActiveCamera()) {
-            mCameraPresenter.restart(mCameraTextureView, mSurfaceHolder, getCameraId());
+            mShowCameraHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (!mCameraPresenter.hasActiveCamera())
+                        mCameraPresenter.restart(mCameraTextureView, mSurfaceHolder, getCameraId());
+                }
+            }, 250);
         }
     }
 
@@ -150,6 +157,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
         mSurfaceHolder = surfaceTexture;
         if (PermissionUtils.hasCameraPermission(getContext())) {
+            Log.i(TAG, "onSurfaceTextureAvailable: ");
             mSurfaceAlreadyCreated = true;
 
             //start camera after slight delay. Without delay,
@@ -157,6 +165,7 @@ public class CameraFragment extends Fragment implements TextureView.SurfaceTextu
             mShowCameraHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    Log.i(TAG, "run: ");
                     if (!mCameraPresenter.hasActiveCamera())
                         mCameraPresenter.restart(mCameraTextureView, mSurfaceHolder, getCameraId());
                 }

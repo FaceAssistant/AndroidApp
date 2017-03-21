@@ -37,11 +37,10 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
         if (!mBitmapLoaded) return;
         if (!imageView.isCropable()) {
             if (imageView.getSelectedFace() == null) {
-                mFacialRecView.showToast("Select a face");
+                mFacialRecView.showToast(R.string.select_face);
                 return;
             }
 
-            Log.i("TEST", "clickedSubmit: 0");
             mFacialRecView.showProgress(true);
 
             if (mCropSubscription != null) mCropSubscription.unsubscribe();
@@ -52,12 +51,11 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
                         @Override
                         public void call(Uri uri) {
                             if (uri != null) {
-                                Log.i("TEST", "clickedSubmit: 1");
                                 mFacialRecView.faceCropped(uri);
                                 //Log.i(TAG, "call: cropped");
                             } else {
                                 mFacialRecView.showProgress(false);
-                                mFacialRecView.showToast("Error cropping image");
+                                mFacialRecView.showToast(R.string.error_cropping);
                             }
                         }
                     });
@@ -91,26 +89,26 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
 
     @Override
     public void onBitmapLoadStarted() {
-        mFacialRecView.setToolbarTitle("Loading image...");
+        mFacialRecView.setToolbarTitle(R.string.loading_image);
     }
 
     @Override
     public void onBitmapLoaded() {
         mBitmapLoaded = true;
-        mFacialRecView.setToolbarTitle("Scale and crop image");
+        mFacialRecView.setToolbarTitle(R.string.scale_crop);
     }
 
     @Override
     public void onStartFacialRec() {
         mFacialRecView.showProgress(true);
-        mFacialRecView.setToolbarTitle("Processing image...");
+        mFacialRecView.setToolbarTitle(R.string.processing_image);
     }
 
     @Override
     public void onCompleteFacialRec() {
         mFacialRecView.setSubmitButtonImage(R.drawable.ic_action_send);
         mFacialRecView.showProgress(false);
-        mFacialRecView.setToolbarTitle("Select a face");
+        mFacialRecView.setToolbarTitle(R.string.select_face);
     }
 
     @Override
@@ -119,9 +117,9 @@ public class FacialRecPresenter implements FacialRecContract.Presenter {
         if (error == FaceDetectionErrors.ERROR_NO_LIBRARY){
             mFacialRecView.showAlert(R.string.no_lib_title, R.string.no_lib_text);
         }else {
-            String text = error == FaceDetectionErrors.ERROR_GETTING_FACES ?
-                    "Error detecting faces" :
-                    "Error decoding image";
+            int text = error == FaceDetectionErrors.ERROR_GETTING_FACES ?
+                    R.string.error_detecting_face :
+                    R.string.error_decoding_image;
 
             mFacialRecView.showToast(text);
         }

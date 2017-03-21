@@ -11,6 +11,7 @@ public class UserInfoConstants {
     public static final String EMAIL = "faceassist_email";
     public static final String FIRST_NAME = "faceassist_name_first";
     public static final String LAST_NAME = "faceassist_name_last";
+    public static final String PROFILE_URL = "faceassist_photo_url";
 
 
 }
