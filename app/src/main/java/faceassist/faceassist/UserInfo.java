@@ -21,10 +21,10 @@ public class UserInfo {
     }
 
 
-    public static void updateUserInfo(SharedPreferences preferences, String token, String email, String firstName,
+    public static void updateUserInfo(SharedPreferences preferences, boolean loggedIn, String email, String firstName,
                                       String lastName){
         if (mUserInfoSingleton != null){
-            mUserInfoSingleton.mToken = token;
+            mUserInfoSingleton.mLoggedIn = loggedIn;
             mUserInfoSingleton.mEmail = email;
             mUserInfoSingleton.mFirstName = firstName;
             mUserInfoSingleton.mLastName = lastName;
@@ -32,7 +32,7 @@ public class UserInfo {
         }
 
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(UserInfoConstants.TOKEN, token);
+        editor.putBoolean(UserInfoConstants.LOGGED_IN, loggedIn);
         editor.putString(UserInfoConstants.EMAIL, email);
         editor.putString(UserInfoConstants.FIRST_NAME, firstName);
         editor.putString(UserInfoConstants.LAST_NAME, lastName);
@@ -44,18 +44,18 @@ public class UserInfo {
 
     public static void clean(SharedPreferences preferences){
         mUserInfoSingleton = null;
-        updateUserInfo(preferences, null, null, null, null);
+        updateUserInfo(preferences, false, null, null, null);
     }
 
-
-    private String mToken = null;
+    private boolean mLoggedIn = true;
     private String mEmail = null;
     private String mFirstName = null;
     private String mLastName = null;
     //private String mPhotoUrl = null;
 
+
     private UserInfo(SharedPreferences preferences){
-        mToken = preferences.getString(UserInfoConstants.TOKEN, null);
+        mLoggedIn = preferences.getBoolean(UserInfoConstants.LOGGED_IN, true);
         mEmail = preferences.getString(UserInfoConstants.EMAIL, null);
         mFirstName = preferences.getString(UserInfoConstants.FIRST_NAME, null);
         mLastName = preferences.getString(UserInfoConstants.LAST_NAME, null);
@@ -64,12 +64,7 @@ public class UserInfo {
 
 
     public boolean isLoggedIn(){
-        return mToken != null;
-    }
-
-
-    public String getToken() {
-        return mToken;
+        return mLoggedIn;
     }
 
     public String getEmail() {

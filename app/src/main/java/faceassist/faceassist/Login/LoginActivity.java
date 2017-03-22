@@ -158,10 +158,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void updateAccountInfo(GoogleSignInAccount account) {
-
         UserInfo.updateUserInfo(
                 getSharedPreferences(UserInfoConstants.DEF_PREF, MODE_PRIVATE),
-                account.getIdToken(),
+                true,
                 account.getEmail(),
                 account.getGivenName(),
                 account.getFamilyName()

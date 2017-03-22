@@ -3,7 +3,6 @@ package faceassist.faceassist;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -31,14 +30,12 @@ public class LaunchActivity extends AppCompatActivity implements ProviderInstall
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        UserInfo.init(getSharedPreferences(UserInfoConstants.DEF_PREF, MODE_PRIVATE));
     }
 
 
     @Override
     protected void onPostResume() {
         super.onPostResume();
-
         if (mRetryProviderInstall) {
             // We can now safely retry installation.
             updateAndroidSecurityProvider();

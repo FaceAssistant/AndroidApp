@@ -18,6 +18,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +29,8 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import faceassist.faceassist.API.API;
+import faceassist.faceassist.API.GoogleAPIHelper;
+import faceassist.faceassist.API.TokenRequestListener;
 import faceassist.faceassist.Components.Activities.AddFace.Models.Entry;
 import faceassist.faceassist.Components.Activities.AddFace.RecyclerView.AddFaceAdapter;
 import faceassist.faceassist.Components.Activities.AddFace.RecyclerView.ImageEntryViewHolder;
@@ -118,10 +122,10 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     }
 
 
-    private void hideKeyboard(){
+    private void hideKeyboard() {
         View view = this.getCurrentFocus();
         if (view != null) {
-            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
@@ -151,53 +155,86 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void verifyImages() {
-        Log.i(TAG, "verifyImages: "+UserInfo.getInstance().getToken());
-        for (Uri uri : mEntry.getImageList()){
-            if (uri == null){
+        for (Uri uri : mEntry.getImageList()) {
+            if (uri == null) {
                 Toast.makeText(this, R.string.not_enough_images, Toast.LENGTH_SHORT).show();
                 return;
             }
         }
 
-        upload();
+        checkTokenAndUpload();
     }
 
-    private void upload() {
+    private void checkTokenAndUpload() {
         showProgress(true);
+
+        GoogleAPIHelper.getInstance().makeApiRequest(new TokenRequestListener() {
+            @Override
+            public void onTokenReceived(GoogleSignInAccount account) {
+                Log.d(TAG, "onTokenReceived: "+account.getIdToken());
+                uploadInfo(account.getIdToken());
+            }
+
+            @Override
+            public void onFailedToGetToken() {
+                Toast.makeText(AddFaceActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
+                showProgress(false);
+            }
+        });
+
+    }
+
+    private void uploadInfo(final String token) {
         if (mUploadSubscription != null) mUploadSubscription.unsubscribe();
         mUploadSubscription = Observable.just(getRequestBody())
                 .subscribeOn(io())
                 .observeOn(mainThread())
-                .subscribe(
-                        new Action1<HashMap<String, Object>>() {
-                            @Override
-                            public void call(HashMap<String, Object> stringObjectHashMap) {
-                                API.post(new String[]{"face", "train"},
-                                        API.getMainHeader(UserInfo.getInstance().getToken()),
-                                        stringObjectHashMap,
-                                        new Callback() {
+                .subscribe(new Action1<HashMap<String, Object>>() {
+                    @Override
+                    public void call(HashMap<String, Object> stringObjectHashMap) {
+                        API.post(new String[]{"face", "train"},
+                                API.getMainHeader(token),
+                                stringObjectHashMap,
+                                new Callback() {
+                                    @Override
+                                    public void onFailure(Call call, IOException e) {
+                                        e.printStackTrace();
+                                        if (call.isCanceled()) return;
+                                        runOnUiThread(new Runnable() {
                                             @Override
-                                            public void onFailure(Call call, IOException e) {
-                                                Log.i(TAG, "onFailure: ");
-                                            }
-
-                                            @Override
-                                            public void onResponse(Call call, Response response) throws IOException {
-                                                if (response.isSuccessful()) {
-                                                    Log.i(TAG, "onResponse: " + response.body().string());
-                                                    runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            finish();
-                                                        }
-                                                    });
-                                                } else {
-                                                    Log.e(TAG, "onResponse: " + response.code() + " " + response.body().string());
-                                                }
+                                            public void run() {
+                                                Toast.makeText(AddFaceActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
+                                                showProgress(false);
                                             }
                                         });
-                            }
-                        });
+                                    }
+
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        if (response.isSuccessful()) {
+                                            Log.i(TAG, "onResponse: " + response.body().string());
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    finish();
+                                                }
+                                            });
+                                        } else {
+                                            Log.e(TAG, "onResponse: " + response.code() + " " + response.body().string());
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Toast.makeText(AddFaceActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
+                                                    showProgress(false);
+                                                }
+                                            });
+                                        }
+
+                                        response.close();
+                                    }
+                                });
+                    }
+                });
     }
 
     private HashMap<String, Object> getRequestBody() {
@@ -215,7 +252,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
 
             JSONArray array = new JSONArray();
 
-            for (Uri uri : mEntry.getImageList()){
+            for (Uri uri : mEntry.getImageList()) {
                 try {
                     array.put(FileUtils.encodeFileBase64(new File(uri.getPath())));
                 } catch (IOException e) {
@@ -226,7 +263,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
             params.put("images", array);
 
             return params;
-        }catch (JSONException e){
+        } catch (JSONException e) {
             e.printStackTrace();
             return null;
         }

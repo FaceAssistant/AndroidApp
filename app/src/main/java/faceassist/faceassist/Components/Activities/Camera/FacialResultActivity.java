@@ -18,6 +18,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,6 +29,8 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 import faceassist.faceassist.API.API;
+import faceassist.faceassist.API.GoogleAPIHelper;
+import faceassist.faceassist.API.TokenRequestListener;
 import faceassist.faceassist.Components.Activities.AddFace.AddFaceActivity;
 import faceassist.faceassist.Components.Activities.Profile.BaseProfile;
 import faceassist.faceassist.Components.Fragments.Camera.CameraFragment;
@@ -48,7 +52,7 @@ import okhttp3.Response;
 
 public class FacialResultActivity extends AppCompatActivity implements CameraFragment.OnImageTaken,
         NeedPermissionFragment.OnCheckPermissionClicked, FacialRecFragment.OnFaceResult,
-        NavigationView.OnNavigationItemSelectedListener, OnNavigationIconClicked{
+        NavigationView.OnNavigationItemSelectedListener, OnNavigationIconClicked {
 
     public static final String TAG = FacialResultActivity.class.getSimpleName();
     private static final String CAMERA_FRAGS = "camera_fragments";
@@ -182,20 +186,38 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
 
     //when a face is selected
     @Override
-    public void onFaceResult(Uri uri, OnFinished onFinished) {
+    public void onFaceResult(final Uri uri, final OnFinished onFinished) {
+        final WeakReference<OnFinished> onFinishedWeakReference = new WeakReference<>(onFinished);
 
-        Log.d(TAG, "onResponse: "+UserInfo.getInstance().getToken());
+        GoogleAPIHelper.getInstance().makeApiRequest(new TokenRequestListener() {
+            @Override
+            public void onTokenReceived(GoogleSignInAccount account) {
+                Log.d(TAG, "onTokenReceived: "+account.getIdToken());
 
+                sendFaceToServer(account.getIdToken(), uri, onFinishedWeakReference);
+            }
+
+            @Override
+            public void onFailedToGetToken() {
+                Toast.makeText(FacialResultActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
+
+                if (onFinishedWeakReference.get() != null) onFinishedWeakReference.get().onFinished();
+            }
+        });
+
+    }
+
+
+    private void sendFaceToServer(String token, Uri uri, final WeakReference<OnFinished> onFinishedWeakReference) {
         try {
             HashMap<String, Object> params = new HashMap<>();
             params.put("image", FileUtils.encodeFileBase64(new File(uri.getPath())));
 
-            final WeakReference<OnFinished> mOnFinishedWeakReference = new WeakReference<>(onFinished);
 
             if (mFacialSearch != null) mFacialSearch.cancel();
 
             mFacialSearch = API.post(new String[]{"face", "infer"},
-                    API.getMainHeader(UserInfo.getInstance().getToken()),
+                    API.getMainHeader(token),
                     params,
                     new Callback() {
 
@@ -207,8 +229,8 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                                 @Override
                                 public void run() {
                                     Toast.makeText(FacialResultActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
-                                    if (mOnFinishedWeakReference.get() != null)
-                                        mOnFinishedWeakReference.get().onFinished();
+                                    if (onFinishedWeakReference.get() != null)
+                                        onFinishedWeakReference.get().onFinished();
                                 }
                             });
                         }
@@ -218,13 +240,13 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                             if (response.isSuccessful()) {
                                 try {
                                     String header = response.header("Person-Type", null);
-                                    if (header == null){
+                                    if (header == null) {
                                         runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
                                                 Toast.makeText(FacialResultActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
-                                                if (mOnFinishedWeakReference.get() != null)
-                                                    mOnFinishedWeakReference.get().onFinished();
+                                                if (onFinishedWeakReference.get() != null)
+                                                    onFinishedWeakReference.get().onFinished();
                                             }
                                         });
                                         return;
@@ -235,17 +257,17 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                                     Log.d(TAG, "onResponse: " + obj.toString(4));
 
                                     final BaseProfile profile;
-                                    if (header.equals(BaseProfile.TYPE_CELEB)){
+                                    if (header.equals(BaseProfile.TYPE_CELEB)) {
                                         profile = new BaseProfile(obj);
-                                    }else{
+                                    } else {
                                         profile = new LovedOneProfile(obj);
                                     }
 
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            if (mOnFinishedWeakReference.get() != null)
-                                                mOnFinishedWeakReference.get().onFinished();
+                                            if (onFinishedWeakReference.get() != null)
+                                                onFinishedWeakReference.get().onFinished();
 
                                             Intent intent = new Intent(FacialResultActivity.this, ProfileActivity.class);
                                             intent.putExtra(ProfileActivity.ARG_PROFILE, profile);
@@ -259,8 +281,8 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                                         @Override
                                         public void run() {
                                             Toast.makeText(FacialResultActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
-                                            if (mOnFinishedWeakReference.get() != null)
-                                                mOnFinishedWeakReference.get().onFinished();
+                                            if (onFinishedWeakReference.get() != null)
+                                                onFinishedWeakReference.get().onFinished();
                                         }
                                     });
 
@@ -270,16 +292,16 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                                     @Override
                                     public void run() {
                                         Toast.makeText(FacialResultActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
-                                        if (mOnFinishedWeakReference.get() != null)
-                                            mOnFinishedWeakReference.get().onFinished();
+                                        if (onFinishedWeakReference.get() != null)
+                                            onFinishedWeakReference.get().onFinished();
                                     }
                                 });
 
-                                Log.d(TAG, "onResponse: " + response.code() + " " + response.body().toString());
+                                Log.d(TAG, "onResponse: " + response.code() + " " + response.body().string());
                             }
                         }
                     });
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -327,21 +349,20 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
     }
 
 
-
     @Override
     public void onBackPressed() {
-        if (mDrawerLayout.isDrawerOpen(mNavigationView)){
+        if (mDrawerLayout.isDrawerOpen(mNavigationView)) {
             mDrawerLayout.closeDrawers();
-        }else {
+        } else {
             super.onBackPressed();
         }
     }
 
     @Override
     public void onNavIconClicked(View v) {
-        if (getSupportFragmentManager().getBackStackEntryCount() > 0){
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             super.onBackPressed();
-        }else {
+        } else {
             mDrawerLayout.openDrawer(mNavigationView);
         }
     }
