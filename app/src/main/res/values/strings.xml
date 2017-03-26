@@ -49,6 +49,8 @@
     <string name="submit">submit</string>
     <string name="required_field">This field is required</string>
     <string name="not_enough_images">Not enough image</string>
+    <string name="uploading">Uploading face in background...</string>
+    <string name="log_out">Log out</string>
 
 
 </resources>

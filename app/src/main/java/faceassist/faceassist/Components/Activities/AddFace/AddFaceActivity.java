@@ -37,6 +37,7 @@ import faceassist.faceassist.Components.Activities.AddFace.RecyclerView.ImageEnt
 import faceassist.faceassist.Components.Activities.Camera.PictureUriActivity;
 import faceassist.faceassist.Components.Activities.Gallery.GalleryActivity;
 import faceassist.faceassist.R;
+import faceassist.faceassist.Upload.UploadIntentService;
 import faceassist.faceassist.UserInfo;
 import faceassist.faceassist.Utils.FileUtils;
 import okhttp3.Call;
@@ -62,10 +63,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     private static final String TAG = AddFaceActivity.class.getSimpleName();
 
     private AddFaceAdapter mAddFaceAdapter;
-    private RecyclerView vRecyclerView;
-    private View vProgress;
     private Entry mEntry = new Entry(IMAGES_COUNT);
-    private Subscription mUploadSubscription;
 
     private EditText vNameEditText;
     private EditText vRelationshipEditText;
@@ -80,8 +78,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
 
         vViewSwitcher = (ViewSwitcher) findViewById(R.id.viewSwitcher);
 
-        vRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        vProgress = findViewById(R.id.progress);
+        RecyclerView vRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4);
 
@@ -162,121 +159,15 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
             }
         }
 
-        checkTokenAndUpload();
+        startUpload();
     }
 
-    private void checkTokenAndUpload() {
-        showProgress(true);
-
-        GoogleAPIHelper.getInstance().makeApiRequest(new TokenRequestListener() {
-            @Override
-            public void onTokenReceived(GoogleSignInAccount account) {
-                Log.d(TAG, "onTokenReceived: "+account.getIdToken());
-                uploadInfo(account.getIdToken());
-            }
-
-            @Override
-            public void onFailedToGetToken() {
-                Toast.makeText(AddFaceActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
-                showProgress(false);
-            }
-        });
-
-    }
-
-    private void uploadInfo(final String token) {
-        if (mUploadSubscription != null) mUploadSubscription.unsubscribe();
-        mUploadSubscription = Observable.just(getRequestBody())
-                .subscribeOn(io())
-                .observeOn(mainThread())
-                .subscribe(new Action1<HashMap<String, Object>>() {
-                    @Override
-                    public void call(HashMap<String, Object> stringObjectHashMap) {
-                        API.post(new String[]{"face", "train"},
-                                API.getMainHeader(token),
-                                stringObjectHashMap,
-                                new Callback() {
-                                    @Override
-                                    public void onFailure(Call call, IOException e) {
-                                        e.printStackTrace();
-                                        if (call.isCanceled()) return;
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(AddFaceActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
-                                                showProgress(false);
-                                            }
-                                        });
-                                    }
-
-                                    @Override
-                                    public void onResponse(Call call, Response response) throws IOException {
-                                        if (response.isSuccessful()) {
-                                            Log.i(TAG, "onResponse: " + response.body().string());
-                                            runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    finish();
-                                                }
-                                            });
-                                        } else {
-                                            Log.e(TAG, "onResponse: " + response.code() + " " + response.body().string());
-                                            runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    Toast.makeText(AddFaceActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
-                                                    showProgress(false);
-                                                }
-                                            });
-                                        }
-
-                                        response.close();
-                                    }
-                                });
-                    }
-                });
-    }
-
-    private HashMap<String, Object> getRequestBody() {
-        try {
-            JSONObject profile = new JSONObject();
-
-            profile.put("name", mEntry.getName());
-            profile.put("birthday", mEntry.getBirthday());
-            profile.put("relationship", mEntry.getRelationship());
-            profile.put("note", mEntry.getNotes());
-            profile.put("last_viewed", mEntry.getLastViewed());
-
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("profile", profile);
-
-            JSONArray array = new JSONArray();
-
-            for (Uri uri : mEntry.getImageList()) {
-                try {
-                    array.put(FileUtils.encodeFileBase64(new File(uri.getPath())));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            params.put("images", array);
-
-            return params;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private void showProgress(boolean show) {
-        if (show) {
-            vViewSwitcher.setVisibility(View.GONE);
-            vProgress.setVisibility(View.VISIBLE);
-        } else {
-            vProgress.setVisibility(View.GONE);
-            vViewSwitcher.setVisibility(View.VISIBLE);
-        }
+    private void startUpload(){
+        Toast.makeText(this, R.string.uploading, Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, UploadIntentService.class);
+        intent.putExtra(UploadIntentService.PENDING_UPLOAD_KEY, mEntry);
+        startService(intent);
+        finish();
     }
 
     @Override
@@ -306,18 +197,12 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         if (pos >= 0 && pos < IMAGES_COUNT && resultCode == RESULT_OK) {
             Uri uri = data.getData();
             if (uri != null) {
-                Log.i(TAG, "onActivityResult: " + uri.getPath());
+                //Log.i(TAG, "onActivityResult: " + uri.getPath());
                 mEntry.setImageListItem(pos, uri);
                 mAddFaceAdapter.notifyItemChanged(pos);
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mUploadSubscription != null) mUploadSubscription.unsubscribe();
     }
 }

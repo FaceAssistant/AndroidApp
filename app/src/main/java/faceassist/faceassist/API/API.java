@@ -8,8 +8,10 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -19,6 +21,7 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by QiFeng on 11/21/15.
@@ -93,6 +96,25 @@ public class API {
         return call;
     }
 
+    //API POST
+    // NOTE: This is a synchronise call
+    public static Response postWithLongTimeout(String[] path, Map<String, String> headers, Map<String, Object> parameters)
+            throws IOException {
+
+        JSONObject json = new JSONObject(parameters);
+        RequestBody body = RequestBody.create(JSON, json.toString()); //get requestbody
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(1, TimeUnit.MINUTES)
+                .readTimeout(1, TimeUnit.MINUTES)
+                .readTimeout(1, TimeUnit.MINUTES)
+                .build();
+
+        Headers requestHeaders = Headers.of(headers);   //add headers
+        String url = getURL(path);
+
+        return client.newCall(new Request.Builder().url(url).headers(requestHeaders).post(body).build()).execute();
+    }
 
     //API PUT
     public static Call put(String[] path,

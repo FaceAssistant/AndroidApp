@@ -25,6 +25,10 @@ public class GoogleAPIHelper {
 
     private static GoogleAPIHelper mGoogleAPIHelper;
 
+    //TEST :
+    // 2 accounts verified
+    // what if not logged in. does this get token correctly ?
+
     public static GoogleAPIHelper init(Context context) {
         if (mGoogleAPIHelper == null) mGoogleAPIHelper = new GoogleAPIHelper(context);
         return mGoogleAPIHelper;
