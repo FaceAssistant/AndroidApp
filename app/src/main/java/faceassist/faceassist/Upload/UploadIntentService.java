@@ -63,7 +63,6 @@ public class UploadIntentService extends IntentService {
         super.onCreate();
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(this);
-        mBuilder.setSmallIcon(android.R.drawable.stat_sys_upload);
         mPendingFiles = 0;
         notificationId = new Random().nextInt();
     }
@@ -112,6 +111,7 @@ public class UploadIntentService extends IntentService {
 
             mBuilder.setContentTitle("Uploading faces")
                     .setContentText(mPendingFiles + (mPendingFiles > 1 ? "faces remaining" : "face remaining"))
+                    .setSmallIcon(android.R.drawable.stat_sys_upload)
                     .setLargeIcon(image)
                     .setProgress(0, 0, true)
                     .setContentIntent(null)
@@ -132,7 +132,7 @@ public class UploadIntentService extends IntentService {
             if (r.isSuccessful()) {
                 mBuilder.setContentTitle("Upload complete")
                         .setContentText("")
-                        .setSmallIcon(R.drawable.ic_stat_untitled_4_01)
+                        .setSmallIcon(R.drawable.ic_action_face)
                         .setProgress(0, 0, false)
                         .setAutoCancel(true)
                         .setContentIntent(getIntent())
@@ -208,7 +208,7 @@ public class UploadIntentService extends IntentService {
         Intent i = new Intent(this, UploadIntentService.class);
         i.putExtra(PENDING_UPLOAD_KEY, p);
         mBuilder.setProgress(0, 0, false)
-                .setSmallIcon(R.drawable.ic_stat_untitled_4_01)
+                .setSmallIcon(R.drawable.ic_action_face)
                 .setContentTitle("File failed to upload")
                 .setContentText("Tap to retry")
                 .setAutoCancel(true)
