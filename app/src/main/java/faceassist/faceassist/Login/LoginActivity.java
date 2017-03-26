@@ -81,11 +81,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-    }
-
     private void handleResult(final GoogleSignInResult res) {
         if (res.isSuccess()) {
             final GoogleSignInAccount account = res.getSignInAccount();
@@ -97,8 +92,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 //                Log.d(TAG, "handleResult: "+account.getGivenName());
 
 
-                attemptLogin(account);
-                //forceLogin(account);
+                updateAccountInfo(account);
+                enterApplication();
 
             } else {
                 Toast.makeText(this, R.string.error_getting_google_account, Toast.LENGTH_SHORT).show();
@@ -111,51 +106,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    private void attemptLogin(final GoogleSignInAccount account){
-        API.post(new String[]{"users", "login"},
-                API.getMainHeader(account.getIdToken()),
-                new HashMap<String, Object>(),
-                new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        Log.i(TAG, "onFailure: ");
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        if (response.isSuccessful()) {
-
-                            updateAccountInfo(account);
-                            Log.d(TAG, "onResponse: " + response.body().string());
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    enterApplication();
-                                }
-                            });
-                        } else {
-                            Log.d(TAG, "onResponse: " + response.body().string());
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(LoginActivity.this, R.string.server_comm_error, Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-
-                        response.close();
-                    }
-                }
-        );
-    }
-
-
-    private void forceLogin(GoogleSignInAccount account){
-        updateAccountInfo(account);
-        enterApplication();
-    }
 
     private void updateAccountInfo(GoogleSignInAccount account) {
         UserInfo.updateUserInfo(
