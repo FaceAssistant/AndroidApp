@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -77,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
         mNavigationView = (NavigationView) mDrawerLayout.findViewById(R.id.drawer);
         mNavigationView.setNavigationItemSelectedListener(this);
 
+        setUpNavDrawerHeader();
+
         //clearBackStack();
         checkPermissions();
 
@@ -87,6 +90,13 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
             launchFragment(fragment, CameraFragment.TAG);
         }
 
+    }
+
+    private void setUpNavDrawerHeader() {
+        TextView textView = (TextView) mNavigationView.findViewById(R.id.username);
+        textView.setText(UserInfo.getInstance().getFirstName() + " " + UserInfo.getInstance().getLastName());
+        textView = (TextView) mNavigationView.findViewById(R.id.subtitle);
+        textView.setText(UserInfo.getInstance().getEmail());
     }
 
 
