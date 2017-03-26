@@ -17,20 +17,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
-
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-
-import faceassist.faceassist.API.API;
-import faceassist.faceassist.API.GoogleAPIHelper;
-import faceassist.faceassist.API.TokenRequestListener;
 import faceassist.faceassist.Components.Activities.AddFace.Models.Entry;
 import faceassist.faceassist.Components.Activities.AddFace.RecyclerView.AddFaceAdapter;
 import faceassist.faceassist.Components.Activities.AddFace.RecyclerView.ImageEntryViewHolder;
@@ -38,17 +24,6 @@ import faceassist.faceassist.Components.Activities.Camera.PictureUriActivity;
 import faceassist.faceassist.Components.Activities.Gallery.GalleryActivity;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Upload.UploadIntentService;
-import faceassist.faceassist.UserInfo;
-import faceassist.faceassist.Utils.FileUtils;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
-import rx.Observable;
-import rx.Subscription;
-import rx.functions.Action1;
-
-import static rx.android.schedulers.AndroidSchedulers.mainThread;
-import static rx.schedulers.Schedulers.io;
 
 /**
  * Created by QiFeng on 2/13/17.

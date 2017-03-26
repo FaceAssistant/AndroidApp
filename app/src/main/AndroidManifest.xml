@@ -29,7 +29,7 @@
         </activity>
 
         <activity
-            android:name=".Components.Activities.Camera.FacialResultActivity"
+            android:name=".Components.Activities.Main.MainActivity"
             android:screenOrientation="portrait"
         />
 

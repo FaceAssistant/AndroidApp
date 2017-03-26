@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import faceassist.faceassist.API.API;
-import faceassist.faceassist.Components.Activities.Camera.FacialResultActivity;
+import faceassist.faceassist.Components.Activities.Main.MainActivity;
 import faceassist.faceassist.R;
 import faceassist.faceassist.UserInfo;
 import faceassist.faceassist.UserInfoConstants;
@@ -168,7 +168,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void enterApplication(){
-        Intent cam = new Intent(LoginActivity.this, FacialResultActivity.class);
+        Intent cam = new Intent(LoginActivity.this, MainActivity.class);
         cam.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(cam);
         finish();

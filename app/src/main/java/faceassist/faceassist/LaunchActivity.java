@@ -11,7 +11,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.security.ProviderInstaller;
 
-import faceassist.faceassist.Components.Activities.Camera.FacialResultActivity;
+import faceassist.faceassist.Components.Activities.Main.MainActivity;
 import faceassist.faceassist.Login.LoginActivity;
 
 /**
@@ -89,7 +89,7 @@ public class LaunchActivity extends AppCompatActivity implements ProviderInstall
     @Override
     public void onProviderInstalled() {
         UserInfo info = UserInfo.getInstance();
-        Class nextActivity = info.isLoggedIn() ? FacialResultActivity.class : LoginActivity.class;
+        Class nextActivity = info.isLoggedIn() ? MainActivity.class : LoginActivity.class;
 
         Intent i = new Intent(LaunchActivity.this, nextActivity);
         startActivity(i);

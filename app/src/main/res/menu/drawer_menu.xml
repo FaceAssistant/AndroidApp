@@ -27,8 +27,9 @@
         <item android:id="@+id/log_out"
               android:checkable="false"
               android:checked="false"
+              android:icon="@drawable/ic_action_person"
               android:title="@string/log_out"
-              />
+        />
 
 
     </group>

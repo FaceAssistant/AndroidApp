@@ -28,7 +28,7 @@ import faceassist.faceassist.API.API;
 import faceassist.faceassist.API.GoogleAPIHelper;
 import faceassist.faceassist.API.TokenRequestListener;
 import faceassist.faceassist.Components.Activities.AddFace.Models.Entry;
-import faceassist.faceassist.Components.Activities.Camera.FacialResultActivity;
+import faceassist.faceassist.Components.Activities.Main.MainActivity;
 import faceassist.faceassist.Login.LoginActivity;
 import faceassist.faceassist.R;
 import faceassist.faceassist.UserInfo;
@@ -191,7 +191,7 @@ public class UploadIntentService extends IntentService {
             intent = new Intent(this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         } else {
-            intent = new Intent(this, FacialResultActivity.class);
+            intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         }
 

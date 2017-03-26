@@ -1,4 +1,4 @@
-package faceassist.faceassist.Components.Activities.Camera;
+package faceassist.faceassist.Components.Activities.Main;
 
 import android.Manifest;
 import android.content.Intent;
@@ -40,8 +40,10 @@ import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecPresenter;
 import faceassist.faceassist.Components.Fragments.NeedPermissions.NeedPermissionFragment;
 import faceassist.faceassist.Components.Activities.Profile.LovedOneProfile;
 import faceassist.faceassist.Components.Activities.Profile.ProfileActivity;
+import faceassist.faceassist.Login.LoginActivity;
 import faceassist.faceassist.R;
 import faceassist.faceassist.UserInfo;
+import faceassist.faceassist.UserInfoConstants;
 import faceassist.faceassist.Utils.FileUtils;
 import faceassist.faceassist.Utils.OnFinished;
 import faceassist.faceassist.Utils.OnNavigationIconClicked;
@@ -50,11 +52,11 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class FacialResultActivity extends AppCompatActivity implements CameraFragment.OnImageTaken,
+public class MainActivity extends AppCompatActivity implements CameraFragment.OnImageTaken,
         NeedPermissionFragment.OnCheckPermissionClicked, FacialRecFragment.OnFaceResult,
         NavigationView.OnNavigationItemSelectedListener, OnNavigationIconClicked {
 
-    public static final String TAG = FacialResultActivity.class.getSimpleName();
+    public static final String TAG = MainActivity.class.getSimpleName();
     private static final String CAMERA_FRAGS = "camera_fragments";
 
     //using these two guys because permission results are returned before onResume
@@ -199,7 +201,7 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
 
             @Override
             public void onFailedToGetToken() {
-                Toast.makeText(FacialResultActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
 
                 if (onFinishedWeakReference.get() != null) onFinishedWeakReference.get().onFinished();
             }
@@ -228,7 +230,7 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(FacialResultActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
                                     if (onFinishedWeakReference.get() != null)
                                         onFinishedWeakReference.get().onFinished();
                                 }
@@ -244,7 +246,7 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                                         runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                Toast.makeText(FacialResultActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(MainActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
                                                 if (onFinishedWeakReference.get() != null)
                                                     onFinishedWeakReference.get().onFinished();
                                             }
@@ -269,7 +271,7 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                                             if (onFinishedWeakReference.get() != null)
                                                 onFinishedWeakReference.get().onFinished();
 
-                                            Intent intent = new Intent(FacialResultActivity.this, ProfileActivity.class);
+                                            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
                                             intent.putExtra(ProfileActivity.ARG_PROFILE, profile);
                                             startActivity(intent);
                                         }
@@ -280,7 +282,7 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            Toast.makeText(FacialResultActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(MainActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
                                             if (onFinishedWeakReference.get() != null)
                                                 onFinishedWeakReference.get().onFinished();
                                         }
@@ -291,7 +293,7 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast.makeText(FacialResultActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(MainActivity.this, R.string.error_communicating_server, Toast.LENGTH_SHORT).show();
                                         if (onFinishedWeakReference.get() != null)
                                             onFinishedWeakReference.get().onFinished();
                                     }
@@ -321,7 +323,7 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
         final Class c;
         switch (item.getItemId()) {
             case R.id.menu_create:
-                c = AddFaceActivity.class;
+                startNextActivity(AddFaceActivity.class);
                 break;
 //            case R.id.menu_current:
 //                //// TODO: 2/13/17 current faces
@@ -329,23 +331,38 @@ public class FacialResultActivity extends AppCompatActivity implements CameraFra
 //            case R.id.menu_settings:
 //                //// TODO: 2/13/17 settings
 //                break;
+            case R.id.log_out:
+                logout();
             default:
-                c = null;
                 break;
         }
+
+
+        return true;
+    }
+
+    private void logout(){
+        UserInfo.clean(getSharedPreferences(UserInfoConstants.DEF_PREF, MODE_PRIVATE));
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+
+
+    private void startNextActivity(final Class c){
+        mDrawerLayout.closeDrawers();
 
         if (c != null) {
             mOnDrawerClosedHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Intent i = new Intent(FacialResultActivity.this, c);
+                    Intent i = new Intent(MainActivity.this, c);
                     startActivity(i);
                 }
             }, 350);
-
         }
-        mDrawerLayout.closeDrawers();
-        return true;
     }
 
 
