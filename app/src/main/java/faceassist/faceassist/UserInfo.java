@@ -43,7 +43,7 @@ public class UserInfo {
     }
 
     public static void clean(SharedPreferences preferences){
-        mUserInfoSingleton = null;
+        mUserInfoSingleton.clean();
         updateUserInfo(preferences, false, null, null, null);
     }
 
@@ -53,15 +53,20 @@ public class UserInfo {
     private String mLastName = null;
     //private String mPhotoUrl = null;
 
-
     private UserInfo(SharedPreferences preferences){
-        mLoggedIn = preferences.getBoolean(UserInfoConstants.LOGGED_IN, true);
+        mLoggedIn = preferences.getBoolean(UserInfoConstants.LOGGED_IN, false);
         mEmail = preferences.getString(UserInfoConstants.EMAIL, null);
         mFirstName = preferences.getString(UserInfoConstants.FIRST_NAME, null);
         mLastName = preferences.getString(UserInfoConstants.LAST_NAME, null);
         //mPhotoUrl = preferences.getString(UserInfoConstants.PROFILE_URL, null);
     }
 
+    public void clean(){
+        mLoggedIn = false;
+        mEmail = null;
+        mFirstName = null;
+        mLastName = null;
+    }
 
     public boolean isLoggedIn(){
         return mLoggedIn;

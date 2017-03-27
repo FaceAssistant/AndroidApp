@@ -56,8 +56,6 @@ public class UploadIntentService extends IntentService {
         setIntentRedelivery(true);
     }
 
-    //// TODO: 6/30/16 move processing of video to this service?
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -82,44 +80,49 @@ public class UploadIntentService extends IntentService {
     }
 
     private void checkTokenAndUpload(final Entry entry) {
-        GoogleAPIHelper.getInstance().makeApiRequest(new TokenRequestListener() {
-            @Override
-            public void onTokenReceived(GoogleSignInAccount account) {
-                Log.d(TAG, "onTokenReceived: "+account.getIdToken());
-                sendNextFile(entry, account.getIdToken());
-            }
 
-            @Override
-            public void onFailedToGetToken() {
-                failedToPost(entry);
-            }
-        });
+        Uri imageUri = entry.getImageList()[0];
+        if (imageUri == null) return;
+        File file = new File(imageUri.getPath());
+        if (!file.exists()){
+            return;
+        }
 
-    }
-
-    private void sendNextFile(Entry entry, String token) {
         try {
-            Uri imageUri = entry.getImageList()[0];
-            File file = new File(imageUri.getPath());
-            if (!file.exists()){
-                failedToPost(entry);
-                Log.e(TAG, "sendNextFile: no image");
-                return;
-            }
-
             Bitmap image = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
 
             mBuilder.setContentTitle("Uploading faces")
-                    .setContentText(mPendingFiles + (mPendingFiles > 1 ? "faces remaining" : "face remaining"))
+                    .setContentText(mPendingFiles + (mPendingFiles > 1 ? " faces remaining" : " face remaining"))
                     .setSmallIcon(android.R.drawable.stat_sys_upload)
                     .setLargeIcon(image)
                     .setProgress(0, 0, true)
                     .setContentIntent(null)
                     .setAutoCancel(false)
+                    .setOngoing(true)
                     .setContentIntent(null);
 
             mNotificationManager.notify(ID, mBuilder.build());
 
+            GoogleAPIHelper.getInstance().makeApiRequest(new TokenRequestListener() {
+                @Override
+                public void onTokenReceived(GoogleSignInAccount account) {
+                    Log.d(TAG, "onTokenReceived: "+account.getIdToken());
+                    sendNextFile(entry, account.getIdToken());
+                }
+
+                @Override
+                public void onFailedToGetToken() {
+                    failedToPost(entry);
+                }
+            });
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private void sendNextFile(Entry entry, String token) {
+        try {
             HashMap<String, Object> params = getRequestBody(entry);
             if(params == null){
                 failedToPost(entry);
@@ -135,18 +138,17 @@ public class UploadIntentService extends IntentService {
                         .setSmallIcon(R.drawable.ic_action_face)
                         .setProgress(0, 0, false)
                         .setAutoCancel(true)
+                        .setOngoing(false)
                         .setContentIntent(getIntent())
                         .setContentText(getPostText(entry.getName()));
 
                 mNotificationManager.notify(ID, mBuilder.build());
                 stopSelf();
             } else {
+                Log.d(TAG, "sendNextFile: "+ r.code()+ " "+r.body().string());
                 failedToPost(entry);
                 stopSelf();
-
             }
-
-            image.recycle();
         } catch (IOException e) {
             failedToPost(entry);
             e.printStackTrace();
@@ -212,6 +214,7 @@ public class UploadIntentService extends IntentService {
                 .setContentTitle("File failed to upload")
                 .setContentText("Tap to retry")
                 .setAutoCancel(true)
+                .setOngoing(false)
                 .setContentIntent(PendingIntent.getService(this, notificationId, i, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT));
 
         mNotificationManager.cancel(ID);

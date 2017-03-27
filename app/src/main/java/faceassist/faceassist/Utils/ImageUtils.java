@@ -174,7 +174,7 @@ public class ImageUtils {
             if (scaled != bitmap) bitmap.recycle();
 
             //// TODO: 3/20/17  change
-            return Uri.fromFile(ImageUtils.savePicture(context, scaled).getAbsoluteFile());
+            return Uri.fromFile(ImageUtils.savePictureToCache(context, scaled).getAbsoluteFile());
         }catch (IOException e){
             e.printStackTrace();
             return null;

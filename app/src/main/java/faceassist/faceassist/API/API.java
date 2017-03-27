@@ -9,6 +9,7 @@ import android.util.Log;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +20,7 @@ import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -105,6 +107,7 @@ public class API {
         RequestBody body = RequestBody.create(JSON, json.toString()); //get requestbody
 
         OkHttpClient client = new OkHttpClient.Builder()
+                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
                 .connectTimeout(1, TimeUnit.MINUTES)
                 .readTimeout(1, TimeUnit.MINUTES)
                 .readTimeout(1, TimeUnit.MINUTES)
@@ -113,7 +116,13 @@ public class API {
         Headers requestHeaders = Headers.of(headers);   //add headers
         String url = getURL(path);
 
-        return client.newCall(new Request.Builder().url(url).headers(requestHeaders).post(body).build()).execute();
+        return client.newCall(
+                new Request.Builder()
+                        .url(url)
+                        .headers(requestHeaders)
+                        .post(body)
+                        .build())
+                .execute();
     }
 
     //API PUT

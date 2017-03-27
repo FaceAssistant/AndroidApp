@@ -24,6 +24,7 @@ import faceassist.faceassist.Components.Activities.Camera.PictureUriActivity;
 import faceassist.faceassist.Components.Activities.Gallery.GalleryActivity;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Upload.UploadIntentService;
+import faceassist.faceassist.Utils.GridSpaceDecoration;
 
 /**
  * Created by QiFeng on 2/13/17.
@@ -34,7 +35,7 @@ import faceassist.faceassist.Upload.UploadIntentService;
 
 public class AddFaceActivity extends AppCompatActivity implements View.OnClickListener, ImageEntryViewHolder.OnImageClick {
 
-    private static final int IMAGES_COUNT = 12;
+    private static final int IMAGES_COUNT = 24;
     private static final String TAG = AddFaceActivity.class.getSimpleName();
 
     private AddFaceAdapter mAddFaceAdapter;
@@ -56,8 +57,8 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         RecyclerView vRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4);
-
         vRecyclerView.setLayoutManager(gridLayoutManager);
+        vRecyclerView.addItemDecoration(new GridSpaceDecoration(4, 4, true));
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -142,7 +143,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         Intent intent = new Intent(this, UploadIntentService.class);
         intent.putExtra(UploadIntentService.PENDING_UPLOAD_KEY, mEntry);
         startService(intent);
-        finish();
+        //finish();
     }
 
     @Override

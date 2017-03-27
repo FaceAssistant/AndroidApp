@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:background="@color/colorPrimary"
@@ -11,7 +12,7 @@
         android:layout_height="64dp"
         android:layout_margin="@dimen/activity_horizontal_margin"
         android:scaleType="centerCrop"
-        android:src="@drawable/copy_prof"
+        android:src="@drawable/facelogo"
     />
 
     <TextView
@@ -21,7 +22,7 @@
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:ellipsize="end"
-        android:text="Qi Feng Huang"
+        tools:text="Qi Feng Huang"
         android:textColor="@color/pureWhite"
         android:textStyle="bold"
     />
@@ -34,7 +35,7 @@
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:ellipsize="end"
-        android:text="qifenghuang2@gmail.com"
+        tools:text="qifenghuang2@gmail.com"
         android:textColor="@color/pureWhite"
         android:alpha="0.7"
         android:textStyle="bold"

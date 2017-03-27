@@ -19,7 +19,13 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInApi;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -93,9 +99,9 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
     }
 
     private void setUpNavDrawerHeader() {
-        TextView textView = (TextView) mNavigationView.findViewById(R.id.username);
+        TextView textView = (TextView) mNavigationView.getHeaderView(0).findViewById(R.id.username);
         textView.setText(UserInfo.getInstance().getFirstName() + " " + UserInfo.getInstance().getLastName());
-        textView = (TextView) mNavigationView.findViewById(R.id.subtitle);
+        textView = (TextView) mNavigationView.getHeaderView(0).findViewById(R.id.subtitle);
         textView.setText(UserInfo.getInstance().getEmail());
     }
 
@@ -204,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
         GoogleAPIHelper.getInstance().makeApiRequest(new TokenRequestListener() {
             @Override
             public void onTokenReceived(GoogleSignInAccount account) {
-                Log.d(TAG, "onTokenReceived: "+account.getIdToken());
+                Log.d(TAG, "onTokenReceived: " + account.getIdToken());
 
                 sendFaceToServer(account.getIdToken(), uri, onFinishedWeakReference);
             }
@@ -213,7 +219,8 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
             public void onFailedToGetToken() {
                 Toast.makeText(MainActivity.this, R.string.failed_connection, Toast.LENGTH_SHORT).show();
 
-                if (onFinishedWeakReference.get() != null) onFinishedWeakReference.get().onFinished();
+                if (onFinishedWeakReference.get() != null)
+                    onFinishedWeakReference.get().onFinished();
             }
         });
 
@@ -351,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
         return true;
     }
 
-    private void logout(){
+    private void logout() {
         UserInfo.clean(getSharedPreferences(UserInfoConstants.DEF_PREF, MODE_PRIVATE));
         Intent intent = new Intent(this, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -360,8 +367,7 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
     }
 
 
-
-    private void startNextActivity(final Class c){
+    private void startNextActivity(final Class c) {
         mDrawerLayout.closeDrawers();
 
         if (c != null) {

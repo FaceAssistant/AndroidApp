@@ -1,6 +1,5 @@
 package faceassist.faceassist.Components.Fragments.Camera;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -10,7 +9,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -165,7 +163,6 @@ public class CameraFragment extends BaseFragment implements TextureView.SurfaceT
             mShowCameraHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Log.i(TAG, "run: ");
                     if (!mCameraPresenter.hasActiveCamera())
                         mCameraPresenter.restart(mCameraTextureView, mSurfaceHolder, getCameraId());
                 }
@@ -183,7 +180,7 @@ public class CameraFragment extends BaseFragment implements TextureView.SurfaceT
         mSurfaceAlreadyCreated = false;
         mShowCameraHandler.removeCallbacksAndMessages(null);
         // stop the preview
-        mCameraPresenter.release(mCameraTextureView);
+        //mCameraPresenter.release(mCameraTextureView);
         return false;
     }
 
