@@ -62,6 +62,7 @@ public class LovedOneProfile extends BaseProfile {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        super.writeToParcel(parcel, i);
         parcel.writeString(mRelationship);
         parcel.writeLong(mLastViewed);
         parcel.writeString(mNote);
