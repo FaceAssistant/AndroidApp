@@ -79,6 +79,12 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
     }
 
     @Override
+    public void onDetach() {
+        super.onDetach();
+        mOnGalleryItemSelected = null;
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -213,6 +219,11 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
             mPickerAdapter.getRequestManager().onDestroy();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mPickerAdapter = null;
+    }
 
     @Override
     public void itemClicked(GalleryItem item) {

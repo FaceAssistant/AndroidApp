@@ -70,6 +70,12 @@ public class FacialRecFragment extends Fragment implements OnFinished, FacialRec
     }
 
     @Override
+    public void onDetach() {
+        super.onDetach();
+        mOnFaceResult = null;
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }

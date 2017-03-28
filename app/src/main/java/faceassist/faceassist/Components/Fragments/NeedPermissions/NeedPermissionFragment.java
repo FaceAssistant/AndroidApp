@@ -40,6 +40,12 @@ public class NeedPermissionFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mOnCheckPermissionClicked = null;
+    }
+
     public static NeedPermissionFragment newInstance(@StringRes int title, @StringRes int text) {
         NeedPermissionFragment fragment = new NeedPermissionFragment();
 

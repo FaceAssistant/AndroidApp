@@ -74,6 +74,12 @@ public class CameraFragment extends BaseFragment implements TextureView.SurfaceT
         }
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mOnImageTaken = null;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
