@@ -36,7 +36,8 @@ public class API {
 
     // API ENDPOINT URL
     private static final String SCHEME = "https";
-    private static final String HOST_LIVE = "faceassist.us/api";
+    private static final String HOST_LIVE = "faceassist.us";
+    private static final String SEGMENT = "api";
     private static final String VERSION_LIVE = "v1";
 
 
@@ -59,6 +60,7 @@ public class API {
         HttpUrl.Builder url = new HttpUrl.Builder()   //build url
                 .scheme(SCHEME)
                 .host(HOST_LIVE)
+                .addPathSegment(SEGMENT)
                 .addPathSegment(VERSION_LIVE);
 
         if (path != null) {
@@ -76,6 +78,8 @@ public class API {
         }
 
         HttpUrl request = url.build();
+
+        //Log.d(TAG, "get: "+request.toString());
         Call call = client.newCall(new Request.Builder().url(request).headers(requestHeaders).build());
         call.enqueue(callback);
         return call;
@@ -164,6 +168,8 @@ public class API {
         url.append(SCHEME)
                 .append("://")
                 .append(HOST_LIVE)
+                .append("/")
+                .append(SEGMENT)
                 .append("/")
                 .append(VERSION_LIVE);
 

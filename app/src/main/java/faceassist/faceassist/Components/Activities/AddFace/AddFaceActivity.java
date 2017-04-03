@@ -1,5 +1,6 @@
 package faceassist.faceassist.Components.Activities.AddFace;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,12 +12,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
+
+import java.util.Calendar;
+import java.util.Locale;
+
 import faceassist.faceassist.Components.Activities.AddFace.Models.Entry;
 import faceassist.faceassist.Components.Activities.AddFace.RecyclerView.AddFaceAdapter;
 import faceassist.faceassist.Components.Activities.AddFace.RecyclerView.ImageEntryViewHolder;
@@ -44,6 +49,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     private EditText vNameEditText;
     private EditText vRelationshipEditText;
     private EditText vNotesEditText;
+    private EditText vBirthdayText;
 
     private ViewSwitcher vViewSwitcher;
 
@@ -77,6 +83,14 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         vNameEditText = (EditText) findViewById(R.id.name);
         vRelationshipEditText = (EditText) findViewById(R.id.relationship);
         vNotesEditText = (EditText) findViewById(R.id.note);
+        vBirthdayText = (EditText) findViewById(R.id.birthday);
+        vBirthdayText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                hideKeyboard();
+                showBirthdayDialog();
+            }
+        });
 
 
         findViewById(R.id.next_button).setOnClickListener(this);
@@ -95,6 +109,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     }
 
 
+
     private void hideKeyboard() {
         View view = this.getCurrentFocus();
         if (view != null) {
@@ -107,24 +122,52 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         vNameEditText.setError(null);
         vRelationshipEditText.setError(null);
         boolean error = false;
+        String errorString = getString(R.string.required_field);
+
         if (vNameEditText.getText().toString().isEmpty()) {
             error = true;
-            vNameEditText.setError(getString(R.string.required_field));
+            vNameEditText.setError(errorString);
         }
 
         if (vRelationshipEditText.getText().toString().isEmpty()) {
             error = true;
-            vRelationshipEditText.setError(getString(R.string.required_field));
+            vRelationshipEditText.setError(errorString);
         }
+
+        if (vBirthdayText.getText().toString().isEmpty()){
+            error = true;
+            vBirthdayText.setError(errorString);
+        }
+
+
 
         if (!error) {
             mEntry.setName(vNameEditText.getText().toString());
             mEntry.setNotes(vNotesEditText.getText().toString());
             mEntry.setRelationship(vRelationshipEditText.getText().toString());
-            mEntry.setLastViewed("2017-1-1");
-            mEntry.setBirthday("2017-1-1");
+            mEntry.setLastViewed(getTodaysDate());
+            mEntry.setBirthday(vBirthdayText.getText().toString());
             vViewSwitcher.showNext();
         }
+    }
+
+    private void showBirthdayDialog(){
+        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                vBirthdayText.setText(getDate(i2, i1, i));
+            }
+        }, 1990, 0, 1).show();
+    }
+
+
+    private String getDate(int m, int d, int y){
+        return String.format(Locale.ENGLISH, "%d/%d/%d", m, d+1, y);
+    }
+
+    private String getTodaysDate(){
+        Calendar calendar = Calendar.getInstance();
+        return getDate(calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.YEAR));
     }
 
     private void verifyImages() {
@@ -143,7 +186,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         Intent intent = new Intent(this, UploadIntentService.class);
         intent.putExtra(UploadIntentService.PENDING_UPLOAD_KEY, mEntry);
         startService(intent);
-        //finish();
+        finish();
     }
 
     @Override

@@ -39,6 +39,7 @@ import faceassist.faceassist.API.API;
 import faceassist.faceassist.API.GoogleAPIHelper;
 import faceassist.faceassist.API.TokenRequestListener;
 import faceassist.faceassist.Components.Activities.AddFace.AddFaceActivity;
+import faceassist.faceassist.Components.Activities.AllFaces.AllFacesActivity;
 import faceassist.faceassist.Components.Activities.Profile.BaseProfile;
 import faceassist.faceassist.Components.Fragments.Camera.CameraFragment;
 import faceassist.faceassist.Components.Fragments.Camera.CameraPresenter;
@@ -342,9 +343,9 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
             case R.id.menu_create:
                 startNextActivity(AddFaceActivity.class);
                 break;
-//            case R.id.menu_current:
-//                //// TODO: 2/13/17 current faces
-//                break;
+            case R.id.menu_current:
+                startNextActivity(AllFacesActivity.class);
+                break;
 //            case R.id.menu_settings:
 //                //// TODO: 2/13/17 settings
 //                break;
@@ -357,6 +358,7 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
 
         return true;
     }
+
 
     private void logout() {
         UserInfo.clean(getSharedPreferences(UserInfoConstants.DEF_PREF, MODE_PRIVATE));

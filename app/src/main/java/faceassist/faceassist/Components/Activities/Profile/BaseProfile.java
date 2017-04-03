@@ -16,20 +16,22 @@ public class BaseProfile implements Parcelable{
     public static final String TYPE_LOVED_ONE = "loved-one";
     public static final String TYPE_CELEB = "celeb";
 
+    private String mId;
     private String mName;
-    private double mConfidence;
 
     public BaseProfile(JSONObject object){
+        mId = JSONHelper.getString("id", object);
         mName = JSONHelper.getString("name", object);
-        mConfidence = JSONHelper.getDouble("confidence",object);
     }
 
-
-    public BaseProfile(String name, double confidence){
+    public BaseProfile(String id, String name){
+        mId = id;
         mName = name;
-        mConfidence = confidence;
     }
 
+    public String getId(){
+        return mId;
+    }
 
     public static final Creator<BaseProfile> CREATOR = new Creator<BaseProfile>() {
         @Override
@@ -47,13 +49,10 @@ public class BaseProfile implements Parcelable{
         return mName;
     }
 
-    public double getConfidence() {
-        return mConfidence;
-    }
 
     protected BaseProfile(Parcel in){
+        mId = in.readString();
         mName = in.readString();
-        mConfidence = in.readDouble();
     }
 
     @Override
@@ -63,7 +62,7 @@ public class BaseProfile implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(mId);
         parcel.writeString(mName);
-        parcel.writeDouble(mConfidence);
     }
 }

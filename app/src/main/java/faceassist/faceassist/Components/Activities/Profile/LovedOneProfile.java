@@ -13,14 +13,16 @@ import faceassist.faceassist.Utils.JSONHelper;
 public class LovedOneProfile extends BaseProfile {
 
     private String mRelationship;
-    private long mLastViewed;
+    private String mLastViewed;
+    private String mBirthday;
     private String mNote;
 
 
     public LovedOneProfile(JSONObject in){
-        super(JSONHelper.getString("name", in), JSONHelper.getDouble("confidence", in));
+        super(in);
+        mBirthday = JSONHelper.getString("birthday", in);
         mRelationship = JSONHelper.getString("relationship", in);
-       //todo mLastViewed
+        mLastViewed = JSONHelper.getString("last_viewed", in);
         mNote = JSONHelper.getString("note", in);
     }
 
@@ -28,8 +30,12 @@ public class LovedOneProfile extends BaseProfile {
         return mRelationship;
     }
 
-    public long getLastViewed() {
+    public String getLastViewed() {
         return mLastViewed;
+    }
+
+    public String getBirthday() {
+        return mBirthday;
     }
 
     public String getNote() {
@@ -37,9 +43,10 @@ public class LovedOneProfile extends BaseProfile {
     }
 
     protected LovedOneProfile(Parcel in) {
-        super(in.readString(), in.readDouble());
+        super(in.readString(), in.readString());
         mRelationship = in.readString();
-        mLastViewed = in.readLong();
+        mBirthday = in.readString();
+        mLastViewed = in.readString();
         mNote = in.readString();
     }
 
@@ -64,7 +71,8 @@ public class LovedOneProfile extends BaseProfile {
     public void writeToParcel(Parcel parcel, int i) {
         super.writeToParcel(parcel, i);
         parcel.writeString(mRelationship);
-        parcel.writeLong(mLastViewed);
+        parcel.writeString(mBirthday);
+        parcel.writeString(mLastViewed);
         parcel.writeString(mNote);
     }
 }

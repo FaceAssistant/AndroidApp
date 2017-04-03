@@ -34,7 +34,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
 
-    private void setUpToolbar(){
+    private void setUpToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,21 +46,20 @@ public class ProfileActivity extends AppCompatActivity {
         toolbar.setTitle(mProfile.getName());
     }
 
-    public void setUpData(){
-        ((TextView)findViewById(R.id.name)).setText(mProfile.getName());
-        ((TextView)findViewById(R.id.confidence)).setText(String.valueOf(mProfile.getConfidence()));
+    public void setUpData() {
+        ((TextView) findViewById(R.id.name)).setText(mProfile.getName());
     }
 
-    private void setUpLovedOneData(){
+    private void setUpLovedOneData() {
 
         if (!(mProfile instanceof LovedOneProfile)) return;
 
         LovedOneProfile lovedOneProfile = (LovedOneProfile) mProfile;
 
         ((TextView) findViewById(R.id.relationship)).setText(lovedOneProfile.getRelationship());
-        //// TODO: 3/20/17 add last viewed
-        //((TextView) findViewById(R.id.last_viewed)).setText(lovedOneProfile.getRelationship());
+        ((TextView) findViewById(R.id.last_viewed)).setText(lovedOneProfile.getLastViewed());
         ((TextView) findViewById(R.id.note)).setText(lovedOneProfile.getNote());
+        ((TextView) findViewById(R.id.birthday)).setText(lovedOneProfile.getBirthday());
     }
 
 }

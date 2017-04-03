@@ -29,6 +29,16 @@
             android:inputType="textCapSentences"
         />
 
+        <EditText
+            android:id="@+id/birthday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:hint="@string/birthday"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+        />
+
 
         <EditText
             android:id="@+id/note"

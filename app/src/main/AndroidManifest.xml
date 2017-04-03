@@ -56,7 +56,11 @@
                   android:screenOrientation="portrait"
         />
 
-        <service android:name=".Upload.UploadIntentService" />
+        <service android:name=".Upload.UploadIntentService"/>
+
+        <activity android:name=".Components.Activities.AllFaces.AllFacesActivity"
+                  android:screenOrientation="portrait"
+        />
 
 
     </application>

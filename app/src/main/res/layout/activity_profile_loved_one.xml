@@ -53,14 +53,15 @@
             />
 
             <TextView
-                android:id="@+id/confidence"
+                android:id="@+id/birthday"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/activity_horizontal_margin"
                 android:gravity="center"
                 android:textSize="@dimen/text_size_body"
-                tools:text="0.99"
+                tools:text="2/3/1234"
             />
+
 
             <TextView
                 android:id="@+id/last_viewed"
@@ -68,7 +69,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/activity_horizontal_margin"
                 android:gravity="center"
-                android:text="January 1, 2017"
+                android:text="1/1/2017"
                 android:textSize="@dimen/text_size_body"
             />
 

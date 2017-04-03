@@ -51,6 +51,9 @@
     <string name="not_enough_images">Not enough image</string>
     <string name="uploading">Uploading face in background...</string>
     <string name="log_out">Log out</string>
+    <string name="all_faces">All Faces</string>
+    <string name="birthday">Birthday</string>
+    <string name="no_results_found">No results found</string>
 
 
 </resources>
