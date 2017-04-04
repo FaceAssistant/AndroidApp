@@ -155,14 +155,14 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
         new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-                vBirthdayText.setText(getDate(i2, i1, i));
+                vBirthdayText.setText(getDate(i1, i2, i));
             }
         }, 1990, 0, 1).show();
     }
 
 
     private String getDate(int m, int d, int y){
-        return String.format(Locale.ENGLISH, "%d/%d/%d", m, d+1, y);
+        return String.format(Locale.ENGLISH, "%d/%d/%d", m+1, d, y);
     }
 
     private String getTodaysDate(){
