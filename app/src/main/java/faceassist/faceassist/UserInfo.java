@@ -47,7 +47,7 @@ public class UserInfo {
         updateUserInfo(preferences, false, null, null, null);
     }
 
-    private boolean mLoggedIn = true;
+    private boolean mLoggedIn = false;
     private String mEmail = null;
     private String mFirstName = null;
     private String mLastName = null;

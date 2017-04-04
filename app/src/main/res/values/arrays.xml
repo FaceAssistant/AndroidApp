@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="all_face_options">
+        <item>Delete</item>
+    </string-array>
+
+
+    <string-array name="add_face_options">
+        <item>Camera</item>
+        <item>Gallery</item>
+    </string-array>
+</resources>

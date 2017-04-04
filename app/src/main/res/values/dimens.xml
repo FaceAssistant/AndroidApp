@@ -8,5 +8,5 @@
     <dimen name="half_margins">8dp</dimen>
     <dimen name="card_corner">4dp</dimen>
     <dimen name="margin_top">64dp</dimen>
-    <dimen name="empty_text_size">32sp</dimen>
+    <dimen name="empty_text_size">24sp</dimen>
 </resources>

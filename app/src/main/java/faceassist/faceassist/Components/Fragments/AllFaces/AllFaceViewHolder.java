@@ -14,6 +14,8 @@ public class AllFaceViewHolder extends RecyclerView.ViewHolder {
 
     private TextView vName;
     private TextView vRelationship;
+    private TextView vBirthday;
+    private TextView vNotes;
     private LovedOneProfile mBaseProfile;
 
     public AllFaceViewHolder(View itemView, final OnLongPressListener longPressListener) {
@@ -21,6 +23,8 @@ public class AllFaceViewHolder extends RecyclerView.ViewHolder {
 
         vName = (TextView) itemView.findViewById(R.id.name);
         vRelationship = (TextView) itemView.findViewById(R.id.relationship);
+        vBirthday = (TextView) itemView.findViewById(R.id.birthday);
+        vNotes = (TextView) itemView.findViewById(R.id.notes);
 
         itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -37,5 +41,7 @@ public class AllFaceViewHolder extends RecyclerView.ViewHolder {
         mBaseProfile = profile;
         vName.setText(mBaseProfile.getName());
         vRelationship.setText(mBaseProfile.getRelationship());
+        vBirthday.setText(mBaseProfile.getBirthday());
+        vNotes.setText(mBaseProfile.getNote());
     }
 }

@@ -193,7 +193,7 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     public void onImageClick(final int requestCode) {
 
         new AlertDialog.Builder(this)
-                .setItems(new String[]{"Camera", "Gallery"}, new DialogInterface.OnClickListener() {
+                .setItems(R.array.add_face_options, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Class c = PictureUriActivity.class;

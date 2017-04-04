@@ -156,8 +156,27 @@ public class API {
         Headers requestHeaders = Headers.of(headers); //add headers
         JSONObject json = new JSONObject(params);
         RequestBody body = RequestBody.create(JSON, json.toString()); //create json
-        String url = getURL(path);
-        Call call = client.newCall(new Request.Builder().url(url).delete(body).headers(requestHeaders).build());
+        HttpUrl.Builder url = new HttpUrl.Builder()   //build url
+                .scheme(SCHEME)
+                .host(HOST_LIVE)
+                .addPathSegment(SEGMENT)
+                .addPathSegment(VERSION_LIVE);
+
+        if (path != null) {
+            for (String p : path) {
+                if (p != null) {
+                    url.addPathSegment(p);
+                }
+            }
+        }
+
+        if (params != null) {
+            for (Map.Entry<String, Object> parameter : params.entrySet()) { //add parameters
+                url.addQueryParameter(parameter.getKey(), parameter.getValue().toString());
+            }
+        }
+
+        Call call = client.newCall(new Request.Builder().url(url.toString()).delete(body).headers(requestHeaders).build());
         call.enqueue(callback);
 
         return call;

@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface OnInteractorResult <T> {
     void onGetAllResultResponse(List<T> results);
-    void onDeleteResponse(boolean deleted, int pos);
+    void onDeleteResponse(boolean deleted, int pos, T profile);
     void onFailed();
     void onError();
 }

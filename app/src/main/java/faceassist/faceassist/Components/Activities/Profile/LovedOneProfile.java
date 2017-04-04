@@ -26,6 +26,14 @@ public class LovedOneProfile extends BaseProfile {
         mNote = JSONHelper.getString("note", in);
     }
 
+    public LovedOneProfile(String id, String name, String birthday, String relationship, String lastViewed, String note){
+        super(id, name);
+        mBirthday = birthday;
+        mRelationship = relationship;
+        mLastViewed = lastViewed;
+        mNote = note;
+    }
+
     public String getRelationship() {
         return mRelationship;
     }
