@@ -20,21 +20,31 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0px"
+        android:layout_weight="1">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/profile_image"
+                android:layout_width="@dimen/profile_image_radius"
+                android:layout_height="@dimen/profile_image_radius"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/double_size"
+                app:civ_border_color="@color/colorLightPrimary"
+                app:civ_border_width="1dp"
+            />
+
             <TextView
                 android:id="@+id/name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/activity_horizontal_margin"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="@dimen/double_size"
+                android:layout_margin="@dimen/activity_horizontal_margin"
                 android:ellipsize="end"
                 android:gravity="center"
                 android:textSize="@dimen/text_size_body"
@@ -69,7 +79,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/activity_horizontal_margin"
                 android:gravity="center"
-                android:text="1/1/2017"
+                android:text="@string/test_date"
                 android:textSize="@dimen/text_size_body"
             />
 
@@ -86,5 +96,26 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/no_button"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/no"/>
+
+
+        <Button
+            android:id="@+id/yes_button"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/yes"/>
+
+    </LinearLayout>
 
 </LinearLayout>

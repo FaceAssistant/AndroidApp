@@ -1,5 +1,6 @@
 package faceassist.faceassist.Components.Activities.Profile;
 
+import android.net.Uri;
 import android.os.Parcel;
 
 import org.json.JSONObject;
@@ -16,7 +17,6 @@ public class LovedOneProfile extends BaseProfile {
     private String mLastViewed;
     private String mBirthday;
     private String mNote;
-
 
     public LovedOneProfile(JSONObject in){
         super(in);

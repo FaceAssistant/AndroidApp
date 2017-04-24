@@ -5,7 +5,11 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 
 import faceassist.faceassist.R;
 
@@ -30,7 +34,11 @@ public class ProfileActivity extends AppCompatActivity {
 
         setUpToolbar();
         setUpData();
-        setUpLovedOneData();
+        setUpButtons();
+
+        if (mProfile instanceof LovedOneProfile) {
+            setUpLovedOneData();
+        }
     }
 
 
@@ -47,19 +55,38 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     public void setUpData() {
+        ImageView imageView = (ImageView) findViewById(R.id.profile_image);
+        Glide.with(this)
+                .load(mProfile.getImage())
+                .into(imageView);
+
         ((TextView) findViewById(R.id.name)).setText(mProfile.getName());
     }
 
     private void setUpLovedOneData() {
-
-        if (!(mProfile instanceof LovedOneProfile)) return;
-
         LovedOneProfile lovedOneProfile = (LovedOneProfile) mProfile;
 
         ((TextView) findViewById(R.id.relationship)).setText(lovedOneProfile.getRelationship());
         ((TextView) findViewById(R.id.last_viewed)).setText(lovedOneProfile.getLastViewed());
         ((TextView) findViewById(R.id.note)).setText(lovedOneProfile.getNote());
         ((TextView) findViewById(R.id.birthday)).setText(lovedOneProfile.getBirthday());
+    }
+
+    private void setUpButtons(){
+        findViewById(R.id.yes_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(ProfileActivity.this, R.string.recorded_answer, Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
+
+        findViewById(R.id.no_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 
 }

@@ -1,5 +1,6 @@
 package faceassist.faceassist.Components.Activities.Profile;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -18,6 +19,7 @@ public class BaseProfile implements Parcelable{
 
     private String mId;
     private String mName;
+    private Uri mImage;
 
     public BaseProfile(JSONObject object){
         mId = JSONHelper.getString("id", object);
@@ -27,6 +29,14 @@ public class BaseProfile implements Parcelable{
     public BaseProfile(String id, String name){
         mId = id;
         mName = name;
+    }
+
+    public Uri getImage() {
+        return mImage;
+    }
+
+    public void setImage(Uri image) {
+        mImage = image;
     }
 
     public String getId(){
@@ -53,6 +63,7 @@ public class BaseProfile implements Parcelable{
     protected BaseProfile(Parcel in){
         mId = in.readString();
         mName = in.readString();
+        mImage = in.readParcelable(Uri.class.getClassLoader());
     }
 
     @Override
@@ -64,5 +75,6 @@ public class BaseProfile implements Parcelable{
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(mId);
         parcel.writeString(mName);
+        parcel.writeParcelable(mImage, i);
     }
 }

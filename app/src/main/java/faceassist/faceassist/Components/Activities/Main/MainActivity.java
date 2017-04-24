@@ -19,14 +19,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInApi;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -228,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
     }
 
 
-    private void sendFaceToServer(String token, Uri uri, final WeakReference<OnFinished> onFinishedWeakReference) {
+    private void sendFaceToServer(String token, final Uri uri, final WeakReference<OnFinished> onFinishedWeakReference) {
         try {
             HashMap<String, Object> params = new HashMap<>();
             params.put("image", FileUtils.encodeFileBase64(new File(uri.getPath())));
@@ -282,6 +275,8 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
                                     } else {
                                         profile = new LovedOneProfile(obj);
                                     }
+
+                                    profile.setImage(uri);
 
                                     runOnUiThread(new Runnable() {
                                         @Override
