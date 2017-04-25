@@ -66,6 +66,10 @@
                   android:screenOrientation="portrait"
         />
 
+        <activity android:name=".Components.Activities.Friends.FriendsActivity"
+                  android:screenOrientation="portrait"
+        />
+
 
     </application>
 

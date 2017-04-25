@@ -57,9 +57,10 @@
     <string name="no">NO</string>
     <string name="yes">yes</string>
     <string name="test_date">1/1/2017</string>
-    <string name="recorded_answer">Answer has been recorded.</string>
+    <string name="model_updated">Model updated.</string>
     <string name="confirmed">Confirmed</string>
     <string name="history">History</string>
+    <string name="friends">Friends</string>
 
 
 </resources>

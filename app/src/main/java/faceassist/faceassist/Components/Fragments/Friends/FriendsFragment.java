@@ -1,6 +1,5 @@
-package faceassist.faceassist.Components.Fragments.History;
+package faceassist.faceassist.Components.Fragments.Friends;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -15,8 +14,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import faceassist.faceassist.Components.Activities.Friends.FriendsActivity;
-import faceassist.faceassist.Components.Activities.Profile.BaseProfile;
+import faceassist.faceassist.Components.Activities.Profile.LovedOneProfile;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.Base.BaseFragment;
 
@@ -24,11 +22,11 @@ import faceassist.faceassist.Utils.Base.BaseFragment;
  * Created by QiFeng on 4/24/17.
  */
 
-public class HistoryFragment extends BaseFragment implements HistoryContract.View, View.OnClickListener {
+public class FriendsFragment extends BaseFragment implements FriendsContract.View, View.OnClickListener {
 
-    private HistoryContract.Presenter mPresenter;
-    private List<BaseProfile> mBaseProfiles = new ArrayList<>();
-    private HistoryRVAdapter mHistoryRVAdapter;
+    private FriendsContract.Presenter mPresenter;
+    private List<LovedOneProfile> mLovedOneProfiles = new ArrayList<>();
+    private FriendsRVAdapter mFriendsRVAdapter;
 
     private View vProgress;
     private RecyclerView vRecyclerView;
@@ -48,33 +46,25 @@ public class HistoryFragment extends BaseFragment implements HistoryContract.Vie
         return root;
     }
 
-    @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mHistoryRVAdapter = new HistoryRVAdapter(mBaseProfiles, new HistoryRVVH.OnHistoryVHClickListener() {
+        mFriendsRVAdapter = new FriendsRVAdapter(mLovedOneProfiles, new FriendsVH.OnFriendsVHClicked() {
             @Override
-            public void onClickYes(int pos, BaseProfile profile) {
-                if (getContext() != null)
-                    Toast.makeText(getContext(), R.string.model_updated, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onClickNo(int pos, BaseProfile profile) {
-//                if (getActivity() != null) {
-//                    Intent intent = new Intent(getActivity(), FriendsActivity.class);
-//                    startActivity(intent);
-//                    getActivity().finish();
-//                }
+            public void onFriendsVHClicked(int pos, LovedOneProfile profile) {
+                if (getActivity() != null) {
+                    Toast.makeText(getActivity(), R.string.model_updated, Toast.LENGTH_SHORT).show();
+                    getActivity().finish();
+                }
             }
         });
 
 
         vRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        vRecyclerView.setAdapter(mHistoryRVAdapter);
+        vRecyclerView.setAdapter(mFriendsRVAdapter);
 
-        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.history);
+        Toolbar toolbar = (Toolbar)view.findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.friends);
         toolbar.setNavigationOnClickListener(new android.view.View.OnClickListener() {
             @Override
             public void onClick(android.view.View view) {
@@ -93,7 +83,7 @@ public class HistoryFragment extends BaseFragment implements HistoryContract.Vie
     @Override
     public void showList(boolean show) {
         if (show) {
-            if (mBaseProfiles.isEmpty()) {
+            if (mLovedOneProfiles.isEmpty()) {
                 vRecyclerView.setVisibility(android.view.View.GONE);
                 vEmptyText.setVisibility(android.view.View.VISIBLE);
             } else {
@@ -107,14 +97,14 @@ public class HistoryFragment extends BaseFragment implements HistoryContract.Vie
     }
 
     @Override
-    public void updateRV(List<BaseProfile> profiles) {
-        mBaseProfiles.clear();
-        mBaseProfiles.addAll(profiles);
-        mHistoryRVAdapter.notifyDataSetChanged();
+    public void updateRV(List<LovedOneProfile> profiles) {
+        mLovedOneProfiles.clear();
+        mLovedOneProfiles.addAll(profiles);
+        mFriendsRVAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void setPresenter(HistoryContract.Presenter presenter) {
+    public void setPresenter(FriendsContract.Presenter presenter) {
         mPresenter = presenter;
     }
 

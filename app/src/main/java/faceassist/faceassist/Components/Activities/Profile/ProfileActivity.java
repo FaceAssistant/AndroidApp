@@ -1,5 +1,6 @@
 package faceassist.faceassist.Components.Activities.Profile;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -15,6 +16,7 @@ import com.bumptech.glide.Glide;
 
 import java.util.Locale;
 
+import faceassist.faceassist.Components.Activities.Friends.FriendsActivity;
 import faceassist.faceassist.R;
 
 /**
@@ -47,15 +49,14 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
 
-
         mTextToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int i) {
-                if (i != TextToSpeech.ERROR){
+                if (i != TextToSpeech.ERROR) {
                     mTextToSpeech.setLanguage(Locale.ENGLISH);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         mTextToSpeech.speak(mProfile.getName(), TextToSpeech.QUEUE_FLUSH, null, null);
-                    }else {
+                    } else {
                         mTextToSpeech.speak(mProfile.getName(), TextToSpeech.QUEUE_FLUSH, null);
                     }
                 }
@@ -67,7 +68,7 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (mTextToSpeech != null){
+        if (mTextToSpeech != null) {
             mTextToSpeech.stop();
             mTextToSpeech.shutdown();
         }
@@ -103,11 +104,11 @@ public class ProfileActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.birthday)).setText(lovedOneProfile.getBirthday());
     }
 
-    private void setUpButtons(){
+    private void setUpButtons() {
         findViewById(R.id.yes_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(ProfileActivity.this, R.string.recorded_answer, Toast.LENGTH_SHORT).show();
+                Toast.makeText(ProfileActivity.this, R.string.model_updated, Toast.LENGTH_SHORT).show();
                 finish();
             }
         });
@@ -115,7 +116,10 @@ public class ProfileActivity extends AppCompatActivity {
         findViewById(R.id.no_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Intent intent = new Intent(ProfileActivity.this, FriendsActivity.class);
+                startActivity(intent);
                 finish();
+
             }
         });
     }
