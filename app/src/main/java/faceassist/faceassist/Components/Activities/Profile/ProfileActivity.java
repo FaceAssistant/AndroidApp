@@ -1,6 +1,8 @@
 package faceassist.faceassist.Components.Activities.Profile;
 
+import android.os.Build;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -10,6 +12,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+
+import java.util.Locale;
 
 import faceassist.faceassist.R;
 
@@ -21,6 +25,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     public static final String ARG_PROFILE = "user_profile";
     private BaseProfile mProfile;
+    private TextToSpeech mTextToSpeech;
 
 
     @Override
@@ -40,8 +45,33 @@ public class ProfileActivity extends AppCompatActivity {
         if (mProfile instanceof LovedOneProfile) {
             setUpLovedOneData();
         }
+
+
+
+        mTextToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+                if (i != TextToSpeech.ERROR){
+                    mTextToSpeech.setLanguage(Locale.ENGLISH);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        mTextToSpeech.speak(mProfile.getName(), TextToSpeech.QUEUE_FLUSH, null, null);
+                    }else {
+                        mTextToSpeech.speak(mProfile.getName(), TextToSpeech.QUEUE_FLUSH, null);
+                    }
+                }
+            }
+        });
     }
 
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mTextToSpeech != null){
+            mTextToSpeech.stop();
+            mTextToSpeech.shutdown();
+        }
+    }
 
     private void setUpToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
