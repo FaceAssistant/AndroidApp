@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,6 +34,7 @@ import faceassist.faceassist.API.GoogleAPIHelper;
 import faceassist.faceassist.API.TokenRequestListener;
 import faceassist.faceassist.Components.Activities.AddFace.AddFaceActivity;
 import faceassist.faceassist.Components.Activities.AllFaces.AllFacesActivity;
+import faceassist.faceassist.Components.Activities.History.HistoryActivity;
 import faceassist.faceassist.Components.Activities.Profile.BaseProfile;
 import faceassist.faceassist.Components.Fragments.Camera.CameraFragment;
 import faceassist.faceassist.Components.Fragments.Camera.CameraPresenter;
@@ -344,6 +346,9 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
 //            case R.id.menu_settings:
 //                //// TODO: 2/13/17 settings
 //                break;
+            case R.id.history:
+                startNextActivity(HistoryActivity.class);
+                break;
             case R.id.log_out:
                 logout();
             default:

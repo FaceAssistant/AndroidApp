@@ -27,17 +27,19 @@ import faceassist.faceassist.Utils.Base.BaseFragment;
 public class AllFacesFragment extends BaseFragment implements AllFacesContract.View, OnLongPressListener, View.OnClickListener {
 
     private AllFacesContract.Presenter mAllFacesPresenter;
-    private android.view.View vProgress;
-    private RecyclerView vRecyclerView;
     private List<LovedOneProfile> mLovedOneProfiles = new ArrayList<>();
     private AllFaceAdapter mAllFaceAdapter;
-    private android.view.View vEmptyText;
+
+
+    private View vProgress;
+    private RecyclerView vRecyclerView;
+    private View vEmptyText;
 
 
     @Nullable
     @Override
-    public android.view.View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        android.view.View root = inflater.inflate(R.layout.fragment_all_faces, container, false);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_all_faces, container, false);
 
         vProgress = root.findViewById(R.id.progressbar);
         vRecyclerView = (RecyclerView) root.findViewById(R.id.recycler_view);
@@ -49,7 +51,7 @@ public class AllFacesFragment extends BaseFragment implements AllFacesContract.V
 
 
     @Override
-    public void onViewCreated(android.view.View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         mAllFaceAdapter = new AllFaceAdapter(mLovedOneProfiles, this);

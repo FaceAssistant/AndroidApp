@@ -17,6 +17,13 @@
               android:title="@string/menu_title_current_faces"
         />
 
+        <item android:id="@+id/history"
+              android:checkable="false"
+              android:checked="false"
+              android:icon="@drawable/ic_action_child_care"
+              android:title="@string/history"
+        />
+
         <item android:id="@+id/menu_settings"
               android:checkable="false"
               android:checked="false"

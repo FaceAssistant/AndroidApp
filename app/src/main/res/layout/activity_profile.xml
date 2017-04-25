@@ -44,18 +44,6 @@
         tools:text="Mike Hawk"
     />
 
-    <TextView
-        android:id="@+id/confidence"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/name"
-        android:layout_centerHorizontal="true"
-        android:layout_gravity="center"
-        android:layout_margin="@dimen/activity_horizontal_margin"
-        android:textSize="32sp"
-        tools:text="0.99"
-    />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

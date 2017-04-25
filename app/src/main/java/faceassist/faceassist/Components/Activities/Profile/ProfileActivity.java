@@ -20,7 +20,8 @@ import faceassist.faceassist.R;
 public class ProfileActivity extends AppCompatActivity {
 
     public static final String ARG_PROFILE = "user_profile";
-    BaseProfile mProfile;
+    private BaseProfile mProfile;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
