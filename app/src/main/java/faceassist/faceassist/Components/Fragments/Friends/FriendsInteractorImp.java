@@ -16,7 +16,7 @@ public class FriendsInteractorImp implements FriendsContract.Interactor {
     @Override
     public void getAllFaces(OnInteractorResult<LovedOneProfile> onInteractorResult) {
         List<LovedOneProfile> profiles = new ArrayList<>();
-
+        //placeholders. update when backend is set up
         profiles.add(new LovedOneProfile("", "Raymond Zhu", "", "Friend","",""));
         profiles.add(new LovedOneProfile("", "Ayaz Shah", "", "Friend","",""));
 
