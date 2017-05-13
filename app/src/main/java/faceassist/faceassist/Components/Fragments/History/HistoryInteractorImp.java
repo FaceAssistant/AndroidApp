@@ -15,7 +15,8 @@ public class HistoryInteractorImp implements HistoryContract.Interactor {
     @Override
     public void getAllFaces(OnInteractorResult<BaseProfile> onInteractorResult) {
         List<BaseProfile> profiles = new ArrayList<>();
-
+        
+        //placeholders. update when backend is set up
         profiles.add(new BaseProfile("12345", "Qi Feng Huang"));
         profiles.add(new BaseProfile("123445", "Scarlett Johanson"));
         profiles.add(new BaseProfile("qwqw", "Barack Obama"));
