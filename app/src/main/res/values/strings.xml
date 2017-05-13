@@ -61,6 +61,7 @@
     <string name="confirmed">Confirmed</string>
     <string name="history">History</string>
     <string name="friends">Friends</string>
+    <string name="albums">Albums</string>
 
 
 </resources>

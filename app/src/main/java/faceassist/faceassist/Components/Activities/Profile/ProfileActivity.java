@@ -7,6 +7,7 @@ import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,6 +27,7 @@ import faceassist.faceassist.R;
 public class ProfileActivity extends AppCompatActivity {
 
     public static final String ARG_PROFILE = "user_profile";
+    private static final String TAG = ProfileActivity.class.getSimpleName();
     private BaseProfile mProfile;
     private TextToSpeech mTextToSpeech;
 
@@ -97,6 +99,9 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void setUpLovedOneData() {
         LovedOneProfile lovedOneProfile = (LovedOneProfile) mProfile;
+
+        Log.i(TAG, "setUpLovedOneData: rel "+ lovedOneProfile.getRelationship());
+        Log.i(TAG, "setUpLovedOneData: last " + lovedOneProfile.getLastViewed());
 
         ((TextView) findViewById(R.id.relationship)).setText(lovedOneProfile.getRelationship());
         ((TextView) findViewById(R.id.last_viewed)).setText(lovedOneProfile.getLastViewed());

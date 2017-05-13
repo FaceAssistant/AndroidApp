@@ -22,5 +22,6 @@ public class PickerConstants {
 
     public static final Uri QUERY_URI = MediaStore.Files.getContentUri("external");
 
-    public static final String SORT_BY = MediaStore.Files.FileColumns.DATE_ADDED + " DESC"; // Sort order.
+    public static final String SORT_BY = MediaStore.Files.FileColumns.DATE_ADDED + " ASC"; // Sort order.
+
 }

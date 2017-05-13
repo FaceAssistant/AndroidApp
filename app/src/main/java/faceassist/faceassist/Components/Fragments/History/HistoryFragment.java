@@ -15,7 +15,6 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import faceassist.faceassist.Components.Activities.Friends.FriendsActivity;
 import faceassist.faceassist.Components.Activities.Profile.BaseProfile;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.Base.BaseFragment;

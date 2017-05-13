@@ -19,12 +19,14 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.Locale;
 
 import faceassist.faceassist.Components.Activities.AddFace.Models.Entry;
 import faceassist.faceassist.Components.Activities.AddFace.RecyclerView.AddFaceAdapter;
 import faceassist.faceassist.Components.Activities.AddFace.RecyclerView.ImageEntryViewHolder;
+import faceassist.faceassist.Components.Activities.AlbumPickerActivity.AlbumPickerActivity;
 import faceassist.faceassist.Components.Activities.Camera.PictureUriActivity;
 import faceassist.faceassist.Components.Activities.Gallery.GalleryActivity;
 import faceassist.faceassist.R;
@@ -196,11 +198,14 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                 .setItems(R.array.add_face_options, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        Class c = PictureUriActivity.class;
-
-                        if (i == 1) {
-                            c = GalleryActivity.class;
+                        if (i == 2){
+                            Intent intent = new Intent(AddFaceActivity.this, AlbumPickerActivity.class);
+                            startActivityForResult(intent, 5);
+                            return;
                         }
+
+                        Class c = PictureUriActivity.class;
+                        if (i == 1) c = GalleryActivity.class;
 
                         Intent intent = new Intent(AddFaceActivity.this, c);
                         startActivityForResult(intent, requestCode);
@@ -212,7 +217,6 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         int pos = requestCode - ImageEntryViewHolder.REQUEST_CODE_BASE;
 
-        //not position is max 12 atm
         if (pos >= 0 && pos < IMAGES_COUNT && resultCode == RESULT_OK) {
             Uri uri = data.getData();
             if (uri != null) {
@@ -220,6 +224,29 @@ public class AddFaceActivity extends AppCompatActivity implements View.OnClickLi
                 mEntry.setImageListItem(pos, uri);
                 mAddFaceAdapter.notifyItemChanged(pos);
             }
+        } else if (requestCode == 5){
+            Uri uri = data.getData();
+
+            if (uri != null){
+                File[] dir = new File(uri.getPath()).listFiles();
+
+                Uri[] list = mEntry.getImageList();
+
+                File f;
+
+                for (int j = dir.length - 1, i = 0; j >= 0 && i < list.length; j--){
+                    f = dir[j];
+
+                    if (f.isDirectory()){
+                        continue;
+                    }
+
+                    list[i++] = Uri.fromFile(f);
+                }
+
+                mAddFaceAdapter.notifyDataSetChanged();
+            }
+
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }

@@ -10,4 +10,5 @@
     <dimen name="margin_top">64dp</dimen>
     <dimen name="empty_text_size">24sp</dimen>
     <dimen name="profile_image_radius">128dp</dimen>
+    <dimen name="small">12sp</dimen>
 </resources>

@@ -19,6 +19,7 @@ public class FriendsInteractorImp implements FriendsContract.Interactor {
 
         profiles.add(new LovedOneProfile("", "Raymond Zhu", "", "Friend","",""));
         profiles.add(new LovedOneProfile("", "Ayaz Shah", "", "Friend","",""));
+        profiles.add(new LovedOneProfile("", "Qi Feng Huang", "", "Me","",""));
 
         onInteractorResult.onGetAllResultResponse(profiles);
     }

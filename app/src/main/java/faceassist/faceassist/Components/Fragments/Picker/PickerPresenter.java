@@ -91,7 +91,6 @@ public class PickerPresenter implements PickerContract.Presenter, LoaderManager.
         int bucketName = cursor.getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME);
         int bucketId = cursor.getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_ID);
 
-
         final HashSet<BucketItem> bucketItems = new HashSet<>();
 
         ArrayList<GalleryItem> galleryItems = new ArrayList<>();
@@ -125,6 +124,7 @@ public class PickerPresenter implements PickerContract.Presenter, LoaderManager.
 
         mPickerView.updateBucketAndGallery(bucketItemList, mUnfilteredGalleryItems);
     }
+
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {

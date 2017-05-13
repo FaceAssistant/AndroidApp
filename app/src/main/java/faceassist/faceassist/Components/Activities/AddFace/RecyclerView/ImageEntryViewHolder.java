@@ -2,6 +2,7 @@ package faceassist.faceassist.Components.Activities.AddFace.RecyclerView;
 
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -35,6 +36,7 @@ public class ImageEntryViewHolder extends RecyclerView.ViewHolder implements Vie
 
         Glide.with(itemView.getContext())
                 .load(imageUri == null ? R.drawable.ic_blank_profile_picture : mImageUri)
+                .error(R.color.pureBlack)
                 .into(vImageView);
     }
 

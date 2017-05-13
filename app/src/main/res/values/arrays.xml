@@ -8,5 +8,6 @@
     <string-array name="add_face_options">
         <item>Camera</item>
         <item>Gallery</item>
+        <item>Album</item>
     </string-array>
 </resources>

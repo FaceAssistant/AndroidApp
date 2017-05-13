@@ -51,7 +51,6 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
 
     private Handler mHandler = new Handler();
 
-
     private AlertDialog mAlertDialog;
     private ArrayAdapter mSpinnerAdapter;
     private AppCompatSpinner vSpinner;
@@ -87,7 +86,6 @@ public class PickerFragment extends Fragment implements PickerAdapter.GalleryIte
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
 

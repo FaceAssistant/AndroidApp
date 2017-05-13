@@ -54,6 +54,4 @@ public class GalleryItem implements Parcelable{
         dest.writeInt(type);
         dest.writeString(bucketId);
     }
-
-
 }

@@ -10,6 +10,7 @@
 
     <color name="pureWhite">#FFFFFF</color>
     <color name="pureBlack">#000000</color>
+    <color name="seventy_black">#B3000000</color>
 
     <color name="confirm_blue">#4fc3f7</color>
 </resources>

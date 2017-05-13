@@ -235,7 +235,6 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
                     API.getMainHeader(token),
                     params,
                     new Callback() {
-
                         @Override
                         public void onFailure(Call call, IOException e) {
                             if (call.isCanceled()) return;
@@ -335,7 +334,6 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         //note: use a runnable 250ish
-        final Class c;
         switch (item.getItemId()) {
             case R.id.menu_create:
                 startNextActivity(AddFaceActivity.class);
@@ -343,9 +341,6 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
             case R.id.menu_current:
                 startNextActivity(AllFacesActivity.class);
                 break;
-//            case R.id.menu_settings:
-//                //// TODO: 2/13/17 settings
-//                break;
             case R.id.history:
                 startNextActivity(HistoryActivity.class);
                 break;
@@ -354,7 +349,6 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.On
             default:
                 break;
         }
-
 
         return true;
     }

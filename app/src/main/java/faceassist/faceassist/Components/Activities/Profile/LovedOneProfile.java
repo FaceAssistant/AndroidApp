@@ -51,7 +51,7 @@ public class LovedOneProfile extends BaseProfile {
     }
 
     protected LovedOneProfile(Parcel in) {
-        super(in.readString(), in.readString());
+        super(in);
         mRelationship = in.readString();
         mBirthday = in.readString();
         mLastViewed = in.readString();

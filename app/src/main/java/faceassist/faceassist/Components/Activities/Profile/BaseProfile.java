@@ -19,7 +19,7 @@ public class BaseProfile implements Parcelable{
 
     private String mId;
     private String mName;
-    private Uri mImage;
+    private Uri mImage = null;
 
     public BaseProfile(JSONObject object){
         mId = JSONHelper.getString("id", object);

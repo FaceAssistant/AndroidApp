@@ -4,10 +4,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
@@ -15,9 +13,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import faceassist.faceassist.Components.Fragments.FacialRec.FacialRecFragment;
@@ -30,7 +25,6 @@ import faceassist.faceassist.Components.Fragments.Picker.PickerPresenter;
 import faceassist.faceassist.R;
 import faceassist.faceassist.Utils.ImageUtils;
 import faceassist.faceassist.Utils.OnFinished;
-import faceassist.faceassist.Utils.OnNavigationIconClicked;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
