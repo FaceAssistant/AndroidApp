@@ -94,7 +94,7 @@ public class ProfileActivity extends AppCompatActivity {
                 .load(mProfile.getImage())
                 .into(imageView);
 
-        ((TextView) findViewById(R.id.name)).setText(mProfile.getName());
+        ((TextView) findViewById(R.id.name)).setText(String.format("Name: %s",mProfile.getName()));
     }
 
     private void setUpLovedOneData() {
@@ -103,10 +103,10 @@ public class ProfileActivity extends AppCompatActivity {
         Log.i(TAG, "setUpLovedOneData: rel "+ lovedOneProfile.getRelationship());
         Log.i(TAG, "setUpLovedOneData: last " + lovedOneProfile.getLastViewed());
 
-        ((TextView) findViewById(R.id.relationship)).setText(lovedOneProfile.getRelationship());
-        ((TextView) findViewById(R.id.last_viewed)).setText(lovedOneProfile.getLastViewed());
-        ((TextView) findViewById(R.id.note)).setText(lovedOneProfile.getNote());
-        ((TextView) findViewById(R.id.birthday)).setText(lovedOneProfile.getBirthday());
+        ((TextView) findViewById(R.id.relationship)).setText(String.format("Relationship: %s",lovedOneProfile.getRelationship()));
+        ((TextView) findViewById(R.id.last_viewed)).setText(String.format("Last Viewed: %s ", lovedOneProfile.getLastViewed()));
+        ((TextView) findViewById(R.id.note)).setText(String.format("Notes: %s",lovedOneProfile.getNote()));
+        ((TextView) findViewById(R.id.birthday)).setText(String.format("Birthday: %s", lovedOneProfile.getBirthday()));
     }
 
     private void setUpButtons() {
